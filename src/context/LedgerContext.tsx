@@ -21,6 +21,7 @@ export interface Ledger {
   name: string;
   type: 'personal' | 'shared';
   ownerId: string;
+  ownerEmail?: string;
   members: string[];
   memberEmails: string[];
   createdAt: any;
@@ -56,7 +57,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
 
     const q = query(
       collection(db, 'ledgers'),
-      where('members', 'array-contains', user.uid)
+      where('memberEmails', 'array-contains', user.email)
     );
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -98,6 +99,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       name,
       type,
       ownerId: user.uid,
+      ownerEmail: user.email,
       members: [user.uid],
       memberEmails: [user.email, ...inviteEmails],
       createdAt: serverTimestamp()

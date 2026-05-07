@@ -22,6 +22,7 @@
         "name": { "type": "string" },
         "type": { "type": "string", "enum": ["personal", "shared"] },
         "ownerId": { "type": "string" },
+        "ownerEmail": { "type": "string" },
         "members": { "type": "array", "items": { "type": "string" }, "description": "List of member UIDs" },
         "memberEmails": { "type": "array", "items": { "type": "string" }, "description": "List of member emails for display/search" },
         "createdAt": { "type": "string", "format": "date-time" }

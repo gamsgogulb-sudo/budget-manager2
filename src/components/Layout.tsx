@@ -139,17 +139,17 @@ export default function Layout() {
                     </button>
                   </form>
 
-                  {currentLedger.members && currentLedger.members.length > 1 && (
+                  {currentLedger.memberEmails && currentLedger.memberEmails.length > 1 && (
                     <div className="mt-8 pt-8 border-t border-[#F9F7F2]">
                       <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 ml-1">공유된 멤버</h4>
-                      <div className="space-y-3">
-                        {currentLedger.members.map((memberEmail: string) => (
+                      <div className="space-y-2">
+                        {currentLedger.memberEmails.map((memberEmail: string) => (
                           <div key={memberEmail} className="flex items-center gap-3 p-3 bg-[#FDFCF8] rounded-xl border border-[#EAE7E0]">
                             <div className="w-8 h-8 rounded-full bg-[#8B9178]/10 text-[#8B9178] flex items-center justify-center">
                               <User className="w-4 h-4" />
                             </div>
                             <span className="text-sm font-bold text-[#5C544E]">{memberEmail}</span>
-                            {memberEmail === currentLedger.ownerId && (
+                            {memberEmail === currentLedger.ownerEmail && (
                               <span className="ml-auto text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md uppercase">Owner</span>
                             )}
                           </div>
