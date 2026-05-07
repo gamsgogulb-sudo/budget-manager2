@@ -9,7 +9,8 @@ import {
   X,
   Plus,
   User,
-  CreditCard
+  CreditCard,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +20,7 @@ import { cn } from '../lib/utils';
 
 export default function Layout() {
   const { user } = useAuth();
-  const { currentLedger, inviteMember } = useLedgers();
+  const { currentLedger, inviteMember, removeMember } = useLedgers();
   const navigate = useNavigate();
   const location = useLocation();
   const [showShareModal, setShowShareModal] = useState(false);
@@ -38,6 +39,17 @@ export default function Layout() {
     setInviteEmail('');
     setShowShareModal(false);
     alert(`${inviteEmail}님에게 공유 설정이 완료되었습니다.`);
+  };
+
+  const handleRemoveMember = async (email: string) => {
+    if (!currentLedger) return;
+    if (window.confirm(`${email}님을 가계부에서 제외하시겠습니까?`)) {
+      try {
+        await removeMember(currentLedger.id, email);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : '삭제 중 오류가 발생했습니다.');
+      }
+    }
   };
 
   return (
@@ -149,8 +161,17 @@ export default function Layout() {
                               <User className="w-4 h-4" />
                             </div>
                             <span className="text-sm font-bold text-[#5C544E]">{memberEmail}</span>
-                            {memberEmail === currentLedger.ownerEmail && (
+                            {memberEmail === currentLedger.ownerEmail ? (
                               <span className="ml-auto text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md uppercase">Owner</span>
+                            ) : (
+                              currentLedger.ownerId === user?.uid && (
+                                <button
+                                  onClick={() => handleRemoveMember(memberEmail)}
+                                  className="ml-auto p-2 text-rose-300 hover:text-rose-500 transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )
                             )}
                           </div>
                         ))}

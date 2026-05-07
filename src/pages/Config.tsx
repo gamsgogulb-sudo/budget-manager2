@@ -12,6 +12,8 @@ export default function Config() {
   const [isEditingLedger, setIsEditingLedger] = useState(false);
   const [ledgerName, setLedgerName] = useState(currentLedger?.name || '');
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleLogout = async () => {
     await logout();
     navigate('/');
@@ -25,14 +27,52 @@ export default function Config() {
 
   const handleDeleteLedger = async () => {
     if (!currentLedger) return;
-    if (confirm('이 가계부를 정말 삭제하시겠습니까? 관련 데이터가 모두 삭제됩니다.')) {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!currentLedger) return;
+    try {
       await deleteLedger(currentLedger.id);
-      alert('가계부가 삭제되었습니다.');
+      setShowDeleteConfirm(false);
+      navigate('/dashboard');
+    } catch (error) {
+      alert('삭제 중 오류가 발생했습니다.');
     }
   };
 
   return (
-    <div className="w-full space-y-8 pb-24 pt-6">
+    <div className="w-full space-y-8 pb-24 pt-6 relative">
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full border border-[#EAE7E0]">
+            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mb-6 mx-auto">
+              <Trash2 className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-display font-bold text-[#5C544E] text-center mb-2">가계부 삭제</h3>
+            <p className="text-sm text-gray-400 text-center mb-8 leading-relaxed">
+              정말로 <span className="font-bold text-[#5C544E]">'{currentLedger?.name}'</span> 가계부를 삭제하시겠습니까? 모든 내역과 공유 정보가 영구적으로 삭제되며 복구할 수 없습니다.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={confirmDelete}
+                className="w-full py-4 bg-rose-600 text-white rounded-2xl font-bold shadow-lg shadow-rose-600/20 active:scale-95 transition-all text-sm"
+              >
+                네, 삭제하겠습니다
+              </button>
+              <button 
+                onClick={() => setShowDeleteConfirm(false)}
+                className="w-full py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold active:scale-95 transition-all text-sm"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Current Ledger Settings */}
       {currentLedger && (
         <section className="space-y-3">
@@ -96,7 +136,7 @@ export default function Config() {
                </div>
                {currentLedger.type === 'shared' && (
                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg uppercase tracking-tight">
-                   Members: {currentLedger.members.length}
+                   Members: {currentLedger.memberEmails.length}
                  </span>
                )}
             </div>
@@ -105,7 +145,7 @@ export default function Config() {
       )}
 
       {/* Danger Zone */}
-      {currentLedger && currentLedger.ownerId === user?.email && (
+      {currentLedger && currentLedger.ownerId === user?.uid && (
         <section className="space-y-3">
           <h2 className="text-[10px] font-bold text-rose-400 uppercase tracking-widest px-1">DANGER ZONE</h2>
           <div className="bg-rose-50/30 rounded-xl border border-rose-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">

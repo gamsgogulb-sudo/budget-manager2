@@ -36,6 +36,7 @@ interface LedgerContextType {
   updateLedger: (ledgerId: string, data: Partial<Ledger>) => Promise<void>;
   deleteLedger: (ledgerId: string) => Promise<void>;
   inviteMember: (ledgerId: string, email: string) => Promise<void>;
+  removeMember: (ledgerId: string, email: string) => Promise<void>;
 }
 
 const LedgerContext = createContext<LedgerContextType | undefined>(undefined);
@@ -147,6 +148,31 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const removeMember = async (ledgerId: string, email: string) => {
+    const ledger = ledgers.find(l => l.id === ledgerId);
+    if (!ledger) return;
+
+    if (email === ledger.ownerEmail) {
+      throw new Error('Owner cannot be removed');
+    }
+
+    const ledgerRef = doc(db, 'ledgers', ledgerId);
+    
+    // Find if user exists to remove from members array too
+    const userQuery = query(collection(db, 'users'), where('email', '==', email));
+    const userSnap = await getDocs(userQuery);
+    
+    const newEmails = ledger.memberEmails.filter(e => e !== email);
+    const updates: any = { memberEmails: newEmails };
+
+    if (!userSnap.empty) {
+      const targetUid = userSnap.docs[0].id;
+      updates.members = ledger.members.filter(m => m !== targetUid);
+    }
+
+    await updateDoc(ledgerRef, updates);
+  };
+
   // Special logic for invited users: 
   // When a user logs in, check if their email is in any ledger's memberEmails but not in members
   useEffect(() => {
@@ -163,7 +189,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   }, [user, ledgers]);
 
   return (
-    <LedgerContext.Provider value={{ ledgers, currentLedger, loading, switchLedger, createLedger, updateLedger, deleteLedger, inviteMember }}>
+    <LedgerContext.Provider value={{ ledgers, currentLedger, loading, switchLedger, createLedger, updateLedger, deleteLedger, inviteMember, removeMember }}>
       {children}
     </LedgerContext.Provider>
   );
