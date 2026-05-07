@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Natural Tones Palette */
+  --color-primary-600: #6B705C; /* Sage Green */
+  --color-primary-700: #5C544E; /* Deep Brown */
+  
+  --color-sage: #8B9178;
+  --color-olive: #6B705C;
+  --color-beige-dark: #EAE7E0;
+  --color-beige-border: #D9D4C7;
+  --color-beige-light: #F9F7F2;
+  --color-tan: #A67C52;
+
+  --color-spending: #f43f5e;
+  --color-income: #10b981;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-[#F9F7F2] text-[#3D3D3D] antialiased;
+  }
+}
+
+@layer components {
+  .theme-card {
+    @apply bg-white rounded-xl border border-[#EAE7E0] shadow-sm;
+  }
+  
+  .theme-input {
+    @apply bg-[#FDFCF8] border-[#EAE7E0] focus:border-[#8B9178] focus:ring-0 rounded-xl p-4 text-sm font-medium transition-all;
+  }
+
+  .theme-btn-primary {
+    @apply bg-[#8B9178] text-white rounded-xl py-3 px-6 font-bold hover:bg-[#6B705C] transition-all shadow-sm;
+  }
+}

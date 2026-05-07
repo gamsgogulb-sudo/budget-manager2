@@ -1,0 +1,181 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User specific settings and metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "theme": { "type": "string", "enum": ["light", "dark"] },
+        "currentMode": { "type": "string", "enum": ["personal", "shared"] },
+        "sharedWith": { "type": "array", "items": { "type": "string" } },
+        "googleSheetId": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A single income or expense record matching legacy structure",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "category": { "type": "string" },
+        "subCategory": { "type": "string" },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "memo": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "settlementStatus": { "type": "string" },
+        "marker": { "type": "boolean", "description": "🐴🐭" },
+        "newSubCategory": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "type": { "type": "string", "enum": ["income", "expense"] },
+        "ownerId": { "type": "string" },
+        "transferId": { "type": "string" },
+        "settledFromAccount": { "type": "string" },
+        "settledToAccount": { "type": "string" }
+      },
+      "required": ["date", "amount", "category", "ownerId"]
+    },
+    "SubCategory": {
+      "title": "Sub Category",
+      "description": "Dynamic sub-category list item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["name", "ownerId"]
+    },
+    "AccountCard": {
+      "title": "Account or Card",
+      "description": "Dynamic payment method list item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["name", "ownerId"]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "Recurring subscription details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "cost": { "type": "number" },
+        "period": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "notes": { "type": "string" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["name", "cost", "ownerId"]
+    },
+    "InvestmentAccount": {
+      "title": "Investment Account",
+      "description": "Bank account or investment vehicle",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bank": { "type": "string" },
+        "name": { "type": "string" },
+        "accountNumber": { "type": "string" },
+        "balance": { "type": "number" },
+        "investmentAmount": { "type": "number" },
+        "type": { "type": "string", "enum": ["general", "ISA", "pension", "IRP"] },
+        "openDate": { "type": "string", "format": "date" },
+        "status": { "type": "string" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["bank", "name", "ownerId"]
+    },
+    "Stock": {
+      "title": "Stock Investment",
+      "description": "Individual stock or asset",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "accountId": { "type": "string" },
+        "symbol": { "type": "string" },
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "avgPrice": { "type": "number" },
+        "buyDate": { "type": "string", "format": "date" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["symbol", "name", "quantity", "avgPrice", "ownerId"]
+    },
+    "Template": {
+      "title": "Transaction Template",
+      "description": "Saved transaction for quick entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "type": { "type": "string" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["name", "ownerId"]
+    },
+    "ChecklistItem": {
+      "title": "Checklist Item",
+      "description": "Financial task or reminder",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["title", "ownerId"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "Core user profiles"
+    },
+    "users/{userId}/transactions": {
+      "schema": "Transaction",
+      "description": "User transactions"
+    },
+    "users/{userId}/subCategories": {
+      "schema": "SubCategory",
+      "description": "User dynamic sub-categories"
+    },
+    "users/{userId}/accountCards": {
+      "schema": "AccountCard",
+      "description": "User dynamic accounts and cards"
+    },
+    "users/{userId}/subscriptions": {
+      "schema": "Subscription",
+      "description": "User subscriptions"
+    },
+    "users/{userId}/investments": {
+      "schema": "InvestmentAccount",
+      "description": "User investment accounts"
+    },
+    "users/{userId}/stocks": {
+      "schema": "Stock",
+      "description": "User stock holdings"
+    },
+    "users/{userId}/templates": {
+      "schema": "Template",
+      "description": "User transaction templates"
+    },
+    "users/{userId}/checklists": {
+      "schema": "ChecklistItem",
+      "description": "User checklist items"
+    }
+  }
+}

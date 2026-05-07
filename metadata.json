@@ -1,0 +1,6 @@
+{
+  "name": "MoMoney - 스마트 가계부",
+  "description": "개인 및 공유 모드를 지원하며 구독, 투자 관리 및 구글 시트 연동 기능을 갖춘 올인원 가계부 서비스입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
