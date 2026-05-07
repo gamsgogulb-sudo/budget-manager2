@@ -43,26 +43,28 @@ export default function Layout() {
   return (
     <div className="flex h-screen bg-[#F9F7F2] overflow-hidden relative">
       <main className="flex-1 flex flex-col min-w-0 bg-[#F9F7F2] relative">
-        <header className="px-4 pt-6 pb-2 lg:px-6 z-[35] bg-[#F9F7F2] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-7 h-7 bg-[#8B9178] rounded-lg flex items-center justify-center text-white shadow-lg shadow-[#8B9178]/10 transition-transform active:scale-95 cursor-pointer" 
-              onClick={() => navigate('/dashboard')}
-            >
-              <CreditCard className="w-4 h-4" />
-            </div>
-            <LedgerSwitcher />
-          </div>
-
-          <div className="flex items-center gap-2">
-            {currentLedger && location.pathname === '/transactions' && (
-              <button 
-                onClick={() => setShowShareModal(true)}
-                className="p-2 text-gray-400 hover:text-[#8B9178] transition-colors border-none bg-transparent active:scale-95"
+        <header className="z-[35] bg-[#F9F7F2]">
+          <div className="max-w-4xl mx-auto px-4 lg:px-6 pt-6 pb-2 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-7 h-7 bg-[#8B9178] rounded-lg flex items-center justify-center text-white shadow-lg shadow-[#8B9178]/10 transition-transform active:scale-95 cursor-pointer" 
+                onClick={() => navigate('/dashboard')}
               >
-                <Share2 className="w-4 h-4" />
-              </button>
-            )}
+                <CreditCard className="w-4 h-4" />
+              </div>
+              <LedgerSwitcher />
+            </div>
+
+            <div className="flex items-center gap-2">
+              {currentLedger && location.pathname === '/transactions' && (
+                <button 
+                  onClick={() => setShowShareModal(true)}
+                  className="p-2 text-gray-400 hover:text-[#8B9178] transition-colors border-none bg-transparent active:scale-95"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
@@ -162,20 +164,22 @@ export default function Layout() {
         </AnimatePresence>
 
         {/* Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-2xl border-t border-[#D9D4C7] flex items-center justify-around px-4 z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] lg:px-[30%]">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => cn(
-                "flex flex-col items-center gap-1 p-2 transition-all rounded-xl min-w-[72px]",
-                isActive ? "text-[#6B705C]" : "text-gray-400 hover:text-[#5C544E]"
-              )}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px] font-bold uppercase tracking-tight">{item.label}</span>
-            </NavLink>
-          ))}
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-[#D9D4C7] z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
+          <div className="max-w-4xl mx-auto h-16 flex items-center justify-around px-4">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => cn(
+                  "flex flex-col items-center gap-1 p-2 transition-all rounded-xl min-w-[72px]",
+                  isActive ? "text-[#6B705C]" : "text-gray-400 hover:text-[#5C544E]"
+                )}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-[10px] font-bold uppercase tracking-tight">{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
         </nav>
       </main>
     </div>

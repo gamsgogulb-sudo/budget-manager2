@@ -32,46 +32,38 @@ export default function Config() {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-8 pb-24 px-4 pt-6">
+    <div className="w-full space-y-8 pb-24 pt-6">
       {/* Current Ledger Settings */}
       {currentLedger && (
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">가계부 관리</h2>
-            {currentLedger.ownerId === user?.email && (
-              <button 
-                onClick={handleDeleteLedger}
-                className="text-[10px] font-bold text-rose-400 hover:text-rose-600 transition-colors uppercase tracking-widest"
-              >
-                가계부 삭제
-              </button>
-            )}
           </div>
           
-          <div className="bg-white rounded-xl border border-[#EAE7E0] shadow-sm p-6 space-y-6">
+          <div className="theme-card p-6 space-y-6">
             <div>
               <label className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block mb-3">가계부 이름</label>
               {isEditingLedger ? (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3">
                   <input
                     autoFocus
                     type="text"
                     value={ledgerName}
                     onChange={(e) => setLedgerName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleUpdateLedger()}
-                    className="w-full bg-[#FDFCF8] border-[#EAE7E0] focus:border-[#8B9178] focus:ring-0 rounded-xl p-4 text-sm font-bold text-[#5C544E]"
+                    className="theme-input w-full font-bold text-[#5C544E]"
                   />
                   <div className="flex gap-2">
                     <button 
                       onClick={handleUpdateLedger} 
-                      className="flex-1 py-3.5 bg-[#8B9178] text-white rounded-xl shadow-lg shadow-[#8B9178]/20 flex items-center justify-center gap-2 font-bold text-xs active:scale-95 transition-transform"
+                      className="flex-1 py-3.5 bg-[#8B9178] text-white rounded-xl shadow-lg shadow-[#8B9178]/20 flex items-center justify-center gap-2 font-bold text-xs active:scale-95 transition-all"
                     >
                       <Check className="w-4 h-4" />
                       저장
                     </button>
                     <button 
                       onClick={() => setIsEditingLedger(false)} 
-                      className="px-6 py-3.5 bg-gray-100 text-gray-400 rounded-xl font-bold text-xs active:scale-95 transition-transform"
+                      className="px-6 py-3.5 bg-gray-100 text-gray-400 rounded-xl font-bold text-xs active:scale-95 transition-all"
                     >
                       취소
                     </button>
@@ -108,6 +100,26 @@ export default function Config() {
                  </span>
                )}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Danger Zone */}
+      {currentLedger && currentLedger.ownerId === user?.email && (
+        <section className="space-y-3">
+          <h2 className="text-[10px] font-bold text-rose-400 uppercase tracking-widest px-1">DANGER ZONE</h2>
+          <div className="bg-rose-50/30 rounded-xl border border-rose-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-rose-800">가계부 삭제</h3>
+              <p className="text-xs text-rose-600 mt-1">삭제된 가계부는 복구할 수 없습니다. 모든 거래 내역과 멤버 설정이 삭제됩니다.</p>
+            </div>
+            <button 
+              onClick={handleDeleteLedger}
+              className="w-full sm:w-auto px-6 py-3 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 transition-all flex items-center justify-center gap-2 active:scale-95"
+            >
+              <Trash2 className="w-4 h-4" />
+              가계부 삭제하기
+            </button>
           </div>
         </section>
       )}
