@@ -15,6 +15,10 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function isLedgerMember(ledgerId) {
+      return isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/ledgers/$(ledgerId)).data.members;
+    }
+
     function isValidId(id) {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
@@ -25,36 +29,29 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get: if isSignedIn(); // Allow get for search/sharing check
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.keys().hasAll(['uid', 'email']);
+      allow get: if isSignedIn();
+      allow create: if isOwner(userId);
       allow update: if isOwner(userId);
-      allow delete: if false;
+    }
+
+    // 2. Ledgers
+    match /ledgers/{ledgerId} {
+      function isMember() {
+        return isSignedIn() && request.auth.uid in resource.data.members;
+      }
+      
+      allow get: if isMember();
+      allow list: if isSignedIn() && resource.data.members.hasAny([request.auth.uid]);
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isMember() && (
+        // Only owner can add/remove members for now, or all members? Let's say all members can invite for simplicity or only owner
+        request.resource.data.ownerId == resource.data.ownerId
+      );
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
 
       // Sub-collections
-      match /transactions/{id} {
-        allow read, write: if isOwner(userId);
-      }
-      match /subCategories/{id} {
-        allow read, write: if isOwner(userId);
-      }
-      match /accountCards/{id} {
-        allow read, write: if isOwner(userId);
-      }
-      match /subscriptions/{id} {
-        allow read, write: if isOwner(userId);
-      }
-      match /investments/{id} {
-        allow read, write: if isOwner(userId);
-      }
-      match /stocks/{id} {
-        allow read, write: if isOwner(userId);
-      }
-      match /templates/{id} {
-        allow read, write: if isOwner(userId);
-      }
-      match /checklists/{id} {
-        allow read, write: if isOwner(userId);
+      match /{subCollection}/{id} {
+        allow read, write: if isLedgerMember(ledgerId);
       }
     }
     

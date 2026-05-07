@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LedgerProvider, useLedgers } from './context/LedgerContext';
 import Layout from './components/Layout';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
@@ -42,9 +43,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <LedgerProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </LedgerProvider>
     </AuthProvider>
   );
 }

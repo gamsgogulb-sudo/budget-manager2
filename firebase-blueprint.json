@@ -8,12 +8,25 @@
         "uid": { "type": "string" },
         "email": { "type": "string" },
         "displayName": { "type": "string" },
-        "theme": { "type": "string", "enum": ["light", "dark"] },
-        "currentMode": { "type": "string", "enum": ["personal", "shared"] },
-        "sharedWith": { "type": "array", "items": { "type": "string" } },
+        "currentLedgerId": { "type": "string", "description": "The ID of the ledger the user is currently looking at" },
         "googleSheetId": { "type": "string" }
       },
       "required": ["uid", "email"]
+    },
+    "Ledger": {
+      "title": "Ledger (Account Book)",
+      "description": "A unit of accounting that can be shared or personal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["personal", "shared"] },
+        "ownerId": { "type": "string" },
+        "members": { "type": "array", "items": { "type": "string" }, "description": "List of member UIDs" },
+        "memberEmails": { "type": "array", "items": { "type": "string" }, "description": "List of member emails for display/search" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "ownerId", "members"]
     },
     "Transaction": {
       "title": "Transaction",
@@ -145,37 +158,41 @@
       "schema": "User",
       "description": "Core user profiles"
     },
-    "users/{userId}/transactions": {
+    "ledgers": {
+      "schema": "Ledger",
+      "description": "Top-level ledgers (personal or shared)"
+    },
+    "ledgers/{ledgerId}/transactions": {
       "schema": "Transaction",
-      "description": "User transactions"
+      "description": "Transactions belonging to a specific ledger"
     },
-    "users/{userId}/subCategories": {
+    "ledgers/{ledgerId}/subCategories": {
       "schema": "SubCategory",
-      "description": "User dynamic sub-categories"
+      "description": "Ledger-specific sub-categories"
     },
-    "users/{userId}/accountCards": {
+    "ledgers/{ledgerId}/accountCards": {
       "schema": "AccountCard",
-      "description": "User dynamic accounts and cards"
+      "description": "Ledger-specific accounts and cards"
     },
-    "users/{userId}/subscriptions": {
+    "ledgers/{ledgerId}/subscriptions": {
       "schema": "Subscription",
-      "description": "User subscriptions"
+      "description": "Ledger-specific subscriptions"
     },
-    "users/{userId}/investments": {
+    "ledgers/{ledgerId}/investments": {
       "schema": "InvestmentAccount",
-      "description": "User investment accounts"
+      "description": "Ledger-specific investment accounts"
     },
-    "users/{userId}/stocks": {
+    "ledgers/{ledgerId}/stocks": {
       "schema": "Stock",
-      "description": "User stock holdings"
+      "description": "Ledger-specific stock holdings"
     },
-    "users/{userId}/templates": {
+    "ledgers/{ledgerId}/templates": {
       "schema": "Template",
-      "description": "User transaction templates"
+      "description": "Ledger-specific transaction templates"
     },
-    "users/{userId}/checklists": {
+    "ledgers/{ledgerId}/checklists": {
       "schema": "ChecklistItem",
-      "description": "User checklist items"
+      "description": "Ledger-specific checklist items"
     }
   }
 }

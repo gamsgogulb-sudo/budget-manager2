@@ -99,8 +99,8 @@ export default function Dashboard() {
   if (loading) return <div className="flex h-64 items-center justify-center text-[#5C544E] font-bold">데이터를 불러오는 중...</div>;
 
   return (
-    <div className="space-y-10 pb-10">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="space-y-6 pb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard 
           title="이번 달 지출" 
           value={formatCurrency(totalExpense)} 
@@ -121,17 +121,17 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Category Expenses Pie Chart */}
-        <div className="lg:col-span-1 theme-card p-8">
-          <h2 className="font-display font-bold text-lg text-[#5C544E] mb-6">지출 카테고리</h2>
-          <div className="h-[250px]">
+        <div className="lg:col-span-1 theme-card p-6">
+          <h2 className="font-display font-bold text-base text-[#5C544E] mb-4">지출 카테고리</h2>
+          <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categoryData}
-                  innerRadius={65}
-                  outerRadius={85}
+                  innerRadius={55}
+                  outerRadius={75}
                   paddingAngle={8}
                   dataKey="value"
                 >
@@ -146,23 +146,23 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-8 space-y-3">
+          <div className="mt-6 space-y-2.5">
             {categoryData.slice(0, 4).map((item, i) => (
               <div key={item.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
                   <span className="text-xs font-bold text-slate-500">{item.name}</span>
                 </div>
-                <span className="text-xs font-bold text-[#5C544E]">{Math.round((item.value / totalExpense) * 100)}%</span>
+                <span className="text-xs font-bold text-[#5C544E]">{totalExpense > 0 ? Math.round((item.value / totalExpense) * 100) : 0}%</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Income vs Expense Bar Chart */}
-        <div className="lg:col-span-2 theme-card p-8 flex flex-col">
-          <h2 className="font-display font-bold text-lg text-[#5C544E] mb-6">현금 흐름 자산</h2>
-          <div className="flex-1 h-[300px]">
+        <div className="lg:col-span-2 theme-card p-6 flex flex-col">
+          <h2 className="font-display font-bold text-base text-[#5C544E] mb-4">현금 흐름 자산</h2>
+          <div className="flex-1 h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -176,7 +176,7 @@ export default function Dashboard() {
                 <Bar 
                   dataKey="amount" 
                   radius={[12, 12, 0, 0]} 
-                  barSize={80}
+                  barSize={60}
                 >
                   {barData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={index === 0 ? '#8B9178' : '#A67C52'} />
@@ -185,16 +185,16 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-6 flex justify-between items-center p-5 bg-[#F9F7F2] rounded-2xl border border-[#EAE7E0]">
+          <div className="mt-4 flex justify-between items-center p-4 bg-[#F9F7F2] rounded-xl border border-[#EAE7E0]">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">월간 가용 자금</p>
-              <p className={cn("text-xl font-display font-bold", totalBalance >= 0 ? "text-[#5C544E]" : "text-rose-600")}>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">월간 가용 자금</p>
+              <p className={cn("text-lg font-display font-bold", totalBalance >= 0 ? "text-[#5C544E]" : "text-rose-600")}>
                 {formatCurrency(totalBalance)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">총 자산 대비</p>
-              <p className="text-xl font-display font-bold text-[#A67C52]">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">총 자산 대비</p>
+              <p className="text-lg font-display font-bold text-[#A67C52]">
                 {totalIncome > 0 ? Math.round((totalBalance / totalIncome) * 100) : 0}%
               </p>
             </div>
@@ -213,13 +213,13 @@ function StatCard({ title, value, trend, color }: { title: string, value: string
   };
 
   return (
-    <div className="bg-white p-7 rounded-xl border border-[#EAE7E0] shadow-sm hover:shadow-md transition-all group">
-      <p className="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest leading-none">{title}</p>
+    <div className="bg-white p-6 rounded-xl border border-[#EAE7E0] shadow-sm hover:shadow-md transition-all group">
+      <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest leading-none">{title}</p>
       <div className="flex items-end justify-between">
-        <h3 className="text-2xl font-display font-bold text-[#5C544E]">{value}</h3>
+        <h3 className="text-xl font-display font-bold text-[#5C544E]">{value}</h3>
       </div>
-      <div className="mt-5 pt-4 border-t border-[#F9F7F2]">
-        <span className={cn("text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-tight", colors[color])}>
+      <div className="mt-4 pt-3 border-t border-[#F9F7F2]">
+        <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-tight", colors[color])}>
           {trend}
         </span>
       </div>

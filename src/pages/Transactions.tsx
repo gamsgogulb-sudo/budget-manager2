@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLedgers } from '../context/LedgerContext';
 import { subscribeTransactions, deleteTransaction, subscribeSubCategories } from '../services/transactionService';
 import { Transaction, SubCategory } from '../types';
 import { formatCurrency, formatDate, cn } from '../lib/utils';
@@ -36,6 +37,7 @@ interface FilterState {
 
 export default function Transactions() {
   const { user } = useAuth();
+  const { currentLedger } = useLedgers();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [availableSubCategories, setAvailableSubCategories] = useState<SubCategory[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,13 +91,20 @@ export default function Transactions() {
   };
 
   useEffect(() => {
-    if (!user) return;
-    const unsubscribe = subscribeTransactions(user.uid, (data) => {
+    if (!user || !currentLedger) {
+      setTransactions([]);
+      setAvailableSubCategories([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const unsubscribe = subscribeTransactions(currentLedger.id, (data) => {
       setTransactions(data);
       setLoading(false);
     });
     
-    const unsubscribeSubs = subscribeSubCategories(user.uid, (data) => {
+    const unsubscribeSubs = subscribeSubCategories(currentLedger.id, (data) => {
       setAvailableSubCategories(data);
     });
 
@@ -103,7 +112,7 @@ export default function Transactions() {
       unsubscribe();
       unsubscribeSubs();
     };
-  }, [user]);
+  }, [user, currentLedger?.id]);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
@@ -198,9 +207,9 @@ export default function Transactions() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!user) return;
+    if (!user || !currentLedger) return;
     if (confirm('정말 삭제하시겠습니까?')) {
-      await deleteTransaction(user.uid, id);
+      await deleteTransaction(currentLedger.id, id);
     }
   };
 
@@ -558,16 +567,23 @@ export default function Transactions() {
       />
 
       {/* Floating Action Button */}
-      <button
-        onClick={() => {
-          setEditingTransaction(undefined);
-          setIsModalOpen(true);
-        }}
-        className="fixed bottom-24 right-6 w-16 h-16 bg-[#8B9178] text-white rounded-full flex items-center justify-center shadow-2xl shadow-[#8B9178]/40 hover:bg-[#6B705C] hover:scale-110 active:scale-95 transition-all z-40 group"
-        aria-label="Add Transaction"
-      >
-        <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
-      </button>
+      <AnimatePresence>
+        {!isModalOpen && !activeFilterType && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            onClick={() => {
+              setEditingTransaction(undefined);
+              setIsModalOpen(true);
+            }}
+            className="fixed bottom-24 right-6 w-16 h-16 bg-[#8B9178] text-white rounded-full flex items-center justify-center shadow-2xl shadow-[#8B9178]/40 hover:bg-[#6B705C] hover:scale-110 active:scale-95 transition-all z-30 group"
+            aria-label="Add Transaction"
+          >
+            <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Filter Drawer (Bottom Sheet) */}
       <AnimatePresence>

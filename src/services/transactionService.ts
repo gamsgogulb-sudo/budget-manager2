@@ -16,8 +16,8 @@ import { Transaction, TransactionType } from '../types';
 
 const COLLECTION_NAME = 'transactions';
 
-export function subscribeTransactions(userId: string, callback: (transactions: Transaction[]) => void) {
-  const path = `users/${userId}/${COLLECTION_NAME}`;
+export function subscribeTransactions(ledgerId: string, callback: (transactions: Transaction[]) => void) {
+  const path = `ledgers/${ledgerId}/${COLLECTION_NAME}`;
   const q = query(
     collection(db, path),
     orderBy('date', 'desc')
@@ -34,8 +34,8 @@ export function subscribeTransactions(userId: string, callback: (transactions: T
   });
 }
 
-export async function addTransaction(userId: string, data: Omit<Transaction, 'id' | 'ownerId'>) {
-  const path = `users/${userId}/${COLLECTION_NAME}`;
+export async function addTransaction(ledgerId: string, userId: string, data: Omit<Transaction, 'id' | 'ownerId'>) {
+  const path = `ledgers/${ledgerId}/${COLLECTION_NAME}`;
   const transactionData = {
     ...data,
     ownerId: userId,
@@ -47,8 +47,8 @@ export async function addTransaction(userId: string, data: Omit<Transaction, 'id
   }
 }
 
-export async function updateTransaction(userId: string, transactionId: string, data: Partial<Transaction>) {
-  const path = `users/${userId}/${COLLECTION_NAME}/${transactionId}`;
+export async function updateTransaction(ledgerId: string, transactionId: string, data: Partial<Transaction>) {
+  const path = `ledgers/${ledgerId}/${COLLECTION_NAME}/${transactionId}`;
   const docRef = doc(db, path);
   try {
     return await updateDoc(docRef, {
@@ -60,8 +60,8 @@ export async function updateTransaction(userId: string, transactionId: string, d
   }
 }
 
-export async function deleteTransaction(userId: string, transactionId: string) {
-  const path = `users/${userId}/${COLLECTION_NAME}/${transactionId}`;
+export async function deleteTransaction(ledgerId: string, transactionId: string) {
+  const path = `ledgers/${ledgerId}/${COLLECTION_NAME}/${transactionId}`;
   const docRef = doc(db, path);
   try {
     return await deleteDoc(docRef);
@@ -71,8 +71,8 @@ export async function deleteTransaction(userId: string, transactionId: string) {
 }
 
 // Sub Categories
-export async function addSubCategory(userId: string, name: string, description?: string) {
-  const path = `users/${userId}/subCategories`;
+export async function addSubCategory(ledgerId: string, userId: string, name: string, description?: string) {
+  const path = `ledgers/${ledgerId}/subCategories`;
   const data: any = { name, ownerId: userId, isFavorite: false };
   if (description !== undefined) data.description = description;
   try {
@@ -82,8 +82,8 @@ export async function addSubCategory(userId: string, name: string, description?:
   }
 }
 
-export async function updateSubCategory(userId: string, id: string, data: Partial<any>) {
-  const path = `users/${userId}/subCategories/${id}`;
+export async function updateSubCategory(ledgerId: string, id: string, data: Partial<any>) {
+  const path = `ledgers/${ledgerId}/subCategories/${id}`;
   const docRef = doc(db, path);
   try {
     return await updateDoc(docRef, data);
@@ -92,8 +92,8 @@ export async function updateSubCategory(userId: string, id: string, data: Partia
   }
 }
 
-export function subscribeSubCategories(userId: string, callback: (data: any[]) => void) {
-  const path = `users/${userId}/subCategories`;
+export function subscribeSubCategories(ledgerId: string, callback: (data: any[]) => void) {
+  const path = `ledgers/${ledgerId}/subCategories`;
   const q = query(collection(db, path), orderBy('name'));
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -101,8 +101,8 @@ export function subscribeSubCategories(userId: string, callback: (data: any[]) =
 }
 
 // Account Cards
-export async function addAccountCard(userId: string, name: string, description?: string) {
-  const path = `users/${userId}/accountCards`;
+export async function addAccountCard(ledgerId: string, userId: string, name: string, description?: string) {
+  const path = `ledgers/${ledgerId}/accountCards`;
   const data: any = { name, ownerId: userId, isFavorite: false };
   if (description !== undefined) data.description = description;
   try {
@@ -112,8 +112,8 @@ export async function addAccountCard(userId: string, name: string, description?:
   }
 }
 
-export async function updateAccountCard(userId: string, id: string, data: Partial<any>) {
-  const path = `users/${userId}/accountCards/${id}`;
+export async function updateAccountCard(ledgerId: string, id: string, data: Partial<any>) {
+  const path = `ledgers/${ledgerId}/accountCards/${id}`;
   const docRef = doc(db, path);
   try {
     return await updateDoc(docRef, data);
@@ -122,8 +122,8 @@ export async function updateAccountCard(userId: string, id: string, data: Partia
   }
 }
 
-export function subscribeAccountCards(userId: string, callback: (data: any[]) => void) {
-  const path = `users/${userId}/accountCards`;
+export function subscribeAccountCards(ledgerId: string, callback: (data: any[]) => void) {
+  const path = `ledgers/${ledgerId}/accountCards`;
   const q = query(collection(db, path), orderBy('name'));
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));

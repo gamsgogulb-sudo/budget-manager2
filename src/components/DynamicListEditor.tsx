@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Plus, Trash2, Layers, CreditCard, Star } from 'lucide-react';
+import { X, Plus, Trash2, Layers, CreditCard, Star, Check } from 'lucide-react';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { SubCategory, AccountCard } from '../types';
@@ -16,35 +16,45 @@ interface Props {
   onClose: () => void;
   type: 'subCategory' | 'accountCard';
   items: (SubCategory | AccountCard)[];
+  ledgerId: string;
   userId: string;
 }
 
-export default function DynamicListEditor({ isOpen, onClose, type, items, userId }: Props) {
+export default function DynamicListEditor({ isOpen, onClose, type, items, ledgerId, userId }: Props) {
   const [newValue, setNewValue] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState('');
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newValue.trim()) return;
     
     if (type === 'subCategory') {
-      await addSubCategory(userId, newValue.trim());
+      await addSubCategory(ledgerId, userId, newValue.trim());
     } else {
-      await addAccountCard(userId, newValue.trim());
+      await addAccountCard(ledgerId, userId, newValue.trim());
     }
     setNewValue('');
+  };
+
+  const handleUpdate = async (id: string) => {
+    if (!editingValue.trim()) return;
+    const fn = type === 'subCategory' ? updateSubCategory : updateAccountCard;
+    await fn(ledgerId, id, { name: editingValue.trim() });
+    setEditingId(null);
   };
 
   const handleDelete = async (itemId: string) => {
     if (confirm('이 항목을 삭제하시겠습니까? 관련 내역에는 영향을 주지 않지만 리스트에서 사라집니다.')) {
       const collection = type === 'subCategory' ? 'subCategories' : 'accountCards';
-      await deleteDoc(doc(db, `users/${userId}/${collection}/${itemId}`));
+      await deleteDoc(doc(db, `ledgers/${ledgerId}/${collection}/${itemId}`));
     }
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -53,11 +63,11 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, userId
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl overflow-hidden border border-[#EAE7E0] mt-auto sm:mt-0"
+            initial={{ y: '100%', opacity: 0.5 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0.5 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl overflow-hidden border border-[#EAE7E0]"
           >
             <div className="p-6 border-b border-[#F9F7F2] flex items-center justify-between bg-[#FDFCF8]">
               <div className="flex items-center gap-3">
@@ -76,7 +86,7 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, userId
               </button>
             </div>
 
-            <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+            <div className="p-6 space-y-6 max-h-[50vh] overflow-y-auto">
               <form onSubmit={handleAdd} className="flex gap-2">
                 <input
                   type="text"
@@ -99,24 +109,52 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, userId
                 ) : (
                   items.map((item) => (
                     <div key={item.id} className="flex items-center justify-between p-3 bg-[#FDFCF8] border border-[#EAE7E0] rounded-xl group hover:border-[#D9D4C7] transition-all">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         <button 
+                          type="button"
                           onClick={() => {
                             const fn = type === 'subCategory' ? updateSubCategory : updateAccountCard;
-                            fn(userId, item.id, { isFavorite: !item.isFavorite });
+                            fn(ledgerId, item.id, { isFavorite: !item.isFavorite });
                           }}
                           className={cn(
-                            "p-1.5 rounded-lg transition-all",
+                            "p-1.5 rounded-lg transition-all flex-shrink-0",
                             item.isFavorite ? "text-amber-500 bg-amber-50" : "text-gray-300 hover:text-amber-200 hover:bg-amber-50/10"
                           )}
                         >
                           <Star className={cn("w-4 h-4", item.isFavorite && "fill-current")} />
                         </button>
-                        <span className="text-sm font-bold text-[#5C544E]">{item.name}</span>
+                        
+                        {editingId === item.id ? (
+                          <div className="flex items-center gap-2 flex-1">
+                            <input
+                              autoFocus
+                              type="text"
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleUpdate(item.id);
+                                if (e.key === 'Escape') setEditingId(null);
+                              }}
+                              className="flex-1 bg-white border border-[#EAE7E0] rounded-lg px-2 py-1 text-sm font-bold text-[#5C544E] focus:ring-0 focus:border-[#8B9178]"
+                            />
+                            <button onClick={() => handleUpdate(item.id)} className="text-[#8B9178]"><Check className="w-4 h-4" /></button>
+                          </div>
+                        ) : (
+                          <span 
+                            onClick={() => {
+                              setEditingId(item.id);
+                              setEditingValue(item.name);
+                            }}
+                            className="text-sm font-bold text-[#5C544E] truncate cursor-pointer hover:text-[#8B9178]"
+                          >
+                            {item.name}
+                          </span>
+                        )}
                       </div>
                       <button 
+                        type="button"
                         onClick={() => handleDelete(item.id)}
-                        className="p-2 text-rose-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
+                        className="p-2 text-rose-300 hover:text-rose-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -128,10 +166,11 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, userId
             
             <div className="p-6 bg-[#FDFCF8] border-t border-[#F9F7F2]">
                <button 
+                type="button"
                 onClick={onClose}
                 className="w-full bg-[#EAE7E0] text-[#5C544E] py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#D9D4C7] transition-all"
                >
-                 닫기
+                 완료
                </button>
             </div>
           </motion.div>

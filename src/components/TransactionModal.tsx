@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Image as ImageIcon, X, Check, Plus, Trash2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLedgers } from '../context/LedgerContext';
+import DynamicListEditor from '../components/DynamicListEditor';
 import { 
   addTransaction, 
   updateTransaction, 
@@ -80,6 +82,7 @@ const DriveImage = ({ url, accessToken, className }: { url: string, accessToken:
 
 export default function TransactionModal({ isOpen, onClose, editingTransaction }: Props) {
   const { user, accessToken, clearAccessToken } = useAuth();
+  const { currentLedger } = useLedgers();
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [accountCards, setAccountCards] = useState<AccountCard[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -112,16 +115,18 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
   });
 
   const [receiptFiles, setReceiptFiles] = useState<File[]>([]);
+  const [isListEditorOpen, setIsListEditorOpen] = useState(false);
+  const [listEditorType, setListEditorType] = useState<'subCategory' | 'accountCard'>('subCategory');
 
   useEffect(() => {
-    if (!user) return;
-    const unsubSub = subscribeSubCategories(user.uid, setSubCategories);
-    const unsubAcc = subscribeAccountCards(user.uid, setAccountCards);
+    if (!user || !currentLedger) return;
+    const unsubSub = subscribeSubCategories(currentLedger.id, setSubCategories);
+    const unsubAcc = subscribeAccountCards(currentLedger.id, setAccountCards);
     return () => {
       unsubSub();
       unsubAcc();
     };
-  }, [user]);
+  }, [user, currentLedger?.id]);
 
   useEffect(() => {
     if (editingTransaction) {
@@ -164,7 +169,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !currentLedger) return;
 
     setIsUploading(true);
     try {
@@ -200,9 +205,9 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
       };
 
       if (editingTransaction) {
-        await updateTransaction(user.uid, editingTransaction.id, data);
+        await updateTransaction(currentLedger.id, editingTransaction.id, data);
       } else {
-        await addTransaction(user.uid, data);
+        await addTransaction(currentLedger.id, user.uid, data);
       }
       setReceiptFiles([]);
       onClose();
@@ -241,7 +246,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
     <>
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -250,11 +255,11 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ y: "100%", opacity: 0.5 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0.5 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-2xl mx-auto bg-white rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+            className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]"
           >
             {/* Handle */}
             <div className="w-full flex justify-center pt-4 pb-2">
@@ -316,8 +321,18 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
 
               {/* 3. Sub Category */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">세부 분류</label>
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">세부 분류</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setListEditorType('subCategory');
+                      setIsListEditorOpen(true);
+                    }}
+                    className="text-[9px] font-bold text-[#8B9178] hover:text-[#6B705C] transition-colors py-1 px-2 bg-[#8B9178]/5 rounded-lg"
+                  >
+                    편집 / 추가
+                  </button>
                 </div>
                 <button
                   type="button"
@@ -340,10 +355,20 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
 
               {/* 4. From Account / Payment Method */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     {formData.type === 'transfer' ? '보내는 통장' : (formData.type === 'balance_adj' ? '대상 통장' : '통장 / 결제수단')}
                   </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setListEditorType('accountCard');
+                      setIsListEditorOpen(true);
+                    }}
+                    className="text-[9px] font-bold text-[#A67C52] hover:text-[#8B6540] transition-colors py-1 px-2 bg-[#A67C52]/5 rounded-lg"
+                  >
+                    편집 / 추가
+                  </button>
                 </div>
                 <button
                   type="button"
@@ -529,10 +554,9 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
       )}
     </AnimatePresence>
 
-    {/* Selection Bottom Sheet */}
     <AnimatePresence>
       {selectionState.isOpen && (
-        <div className="fixed inset-0 z-[60] flex flex-col justify-end">
+        <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -541,14 +565,14 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ y: "100%", opacity: 0.5 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0.5 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-md mx-auto bg-white rounded-t-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+            className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] sm:max-h-[70vh]"
           >
             <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-              <h3 className="font-display font-bold text-[#5C544E]">{selectionState.title}</h3>
+              <h3 className="font-display font-bold text-[#5C544E] ml-1">{selectionState.title}</h3>
               <button 
                 onClick={() => setSelectionState({ ...selectionState, isOpen: false })}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -629,6 +653,15 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
         </div>
       )}
     </AnimatePresence>
+
+    <DynamicListEditor
+      isOpen={isListEditorOpen}
+      onClose={() => setIsListEditorOpen(false)}
+      type={listEditorType}
+      items={listEditorType === 'subCategory' ? subCategories : accountCards}
+      ledgerId={currentLedger?.id || ''}
+      userId={user?.uid || ''}
+    />
     </>
   );
 }
