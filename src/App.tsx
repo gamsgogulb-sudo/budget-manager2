@@ -14,10 +14,16 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#6B705C] border-t-transparent rounded-full animate-spin"></div>
-          <span className="font-display font-medium text-slate-500">불러오고 있습니다...</span>
+      <div className="h-screen w-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-[#007AFF] border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <div className="space-y-1 text-center">
+            <h2 className="text-sm font-bold text-[#1D1D1F]">MoMoney</h2>
+            <p className="text-[10px] text-[#86868B] font-bold uppercase tracking-[0.2em]">Authenticating</p>
+          </div>
         </div>
       </div>
     );

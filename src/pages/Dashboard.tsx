@@ -94,29 +94,29 @@ export default function Dashboard() {
     { name: '지출', amount: totalExpense },
   ];
 
-  const COLORS = ['#8B9178', '#6B705C', '#A67C52', '#DDE2D1', '#E8E3D8', '#C4B5A5'];
+  const COLORS = ['#007AFF', '#5856D6', '#FF2D55', '#34C759', '#FF9500', '#AF52DE'];
 
-  if (loading) return <div className="flex h-64 items-center justify-center text-[#5C544E] font-bold">데이터를 불러오는 중...</div>;
+  if (loading) return <div className="flex h-64 items-center justify-center text-[#86868B] font-semibold text-sm">기록을 정리하고 있습니다...</div>;
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-8 pb-10">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard 
           title="이번 달 지출" 
           value={formatCurrency(totalExpense)} 
-          trend="누적 지출액" 
-          color="rose" 
+          trend="Total Spent" 
+          color="spending" 
         />
         <StatCard 
           title="이번 달 수입" 
           value={formatCurrency(totalIncome)} 
-          trend="누적 수입액" 
-          color="emerald" 
+          trend="Total Income" 
+          color="income" 
         />
         <StatCard 
-          title="현재 잔고" 
+          title="현재 잔액" 
           value={formatCurrency(totalBalance)} 
-          trend="가용 자산 합계" 
+          trend="Available Funds" 
           color="primary" 
         />
       </div>
@@ -124,15 +124,16 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Category Expenses Pie Chart */}
         <div className="lg:col-span-1 theme-card p-6">
-          <h2 className="font-display font-bold text-base text-[#5C544E] mb-4">지출 카테고리</h2>
-          <div className="h-[200px]">
+          <h2 className="font-semibold text-base text-[#1D1D1F] mb-6">분류별 지출</h2>
+          <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categoryData}
-                  innerRadius={55}
-                  outerRadius={75}
-                  paddingAngle={8}
+                  innerRadius={65}
+                  outerRadius={85}
+                  strokeWidth={0}
+                  paddingAngle={4}
                   dataKey="value"
                 >
                   {categoryData.map((entry, index) => (
@@ -141,19 +142,25 @@ export default function Dashboard() {
                 </Pie>
                 <Tooltip 
                   formatter={(value: number) => formatCurrency(value)}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ 
+                    borderRadius: '12px', 
+                    border: 'none', 
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-6 space-y-2.5">
+          <div className="mt-4 space-y-3">
             {categoryData.slice(0, 4).map((item, i) => (
               <div key={item.name} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
-                  <span className="text-xs font-bold text-slate-500">{item.name}</span>
+                  <span className="text-xs font-semibold text-[#86868B]">{item.name}</span>
                 </div>
-                <span className="text-xs font-bold text-[#5C544E]">{totalExpense > 0 ? Math.round((item.value / totalExpense) * 100) : 0}%</span>
+                <span className="text-xs font-bold text-[#1D1D1F]">{totalExpense > 0 ? Math.round((item.value / totalExpense) * 100) : 0}%</span>
               </div>
             ))}
           </div>
@@ -161,40 +168,52 @@ export default function Dashboard() {
 
         {/* Income vs Expense Bar Chart */}
         <div className="lg:col-span-2 theme-card p-6 flex flex-col">
-          <h2 className="font-display font-bold text-base text-[#5C544E] mb-4">현금 흐름 자산</h2>
-          <div className="flex-1 h-[250px]">
+          <h2 className="font-semibold text-base text-[#1D1D1F] mb-6">현금 흐름 분석</h2>
+          <div className="flex-1 h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#64748b' }} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F2F2F7" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fontWeight: 500, fill: '#86868B' }} 
+                  dy={10}
+                />
                 <YAxis hide />
                 <Tooltip 
-                  cursor={{ fill: '#F9F7F2' }}
+                  cursor={{ fill: '#F5F5F7', opacity: 0.4 }}
                   formatter={(value: number) => formatCurrency(value)}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ 
+                    borderRadius: '12px', 
+                    border: 'none', 
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}
                 />
                 <Bar 
                   dataKey="amount" 
-                  radius={[12, 12, 0, 0]} 
-                  barSize={60}
+                  radius={[8, 8, 8, 8]} 
+                  barSize={48}
                 >
                   {barData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === 0 ? '#8B9178' : '#A67C52'} />
+                    <Cell key={`cell-${index}`} fill={index === 0 ? '#34C759' : '#FF3B30'} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 flex justify-between items-center p-4 bg-[#F9F7F2] rounded-xl border border-[#EAE7E0]">
+          <div className="mt-6 flex justify-between items-center p-5 bg-[#F5F5F7] rounded-2xl">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">월간 가용 자금</p>
-              <p className={cn("text-lg font-display font-bold", totalBalance >= 0 ? "text-[#5C544E]" : "text-rose-600")}>
+              <p className="text-[10px] font-bold text-[#86868B] uppercase tracking-widest mb-1">상태 요약</p>
+              <p className={cn("text-xl font-bold tracking-tight", totalBalance >= 0 ? "text-[#1D1D1F]" : "text-[#FF3B30]")}>
                 {formatCurrency(totalBalance)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">총 자산 대비</p>
-              <p className="text-lg font-display font-bold text-[#A67C52]">
+              <p className="text-[10px] font-bold text-[#86868B] uppercase tracking-widest mb-1">수입 대비 비중</p>
+              <p className="text-xl font-bold tracking-tight text-[#007AFF]">
                 {totalIncome > 0 ? Math.round((totalBalance / totalIncome) * 100) : 0}%
               </p>
             </div>
@@ -207,19 +226,19 @@ export default function Dashboard() {
 
 function StatCard({ title, value, trend, color }: { title: string, value: string, trend: string, color: string }) {
   const colors: Record<string, string> = {
-    rose: 'text-rose-600 bg-rose-50',
-    emerald: 'text-emerald-600 bg-emerald-50',
-    primary: 'text-[#A67C52] bg-[#F2EFE9]',
+    spending: 'text-[#FF3B30] bg-[#FF3B30]/10',
+    income: 'text-[#34C759] bg-[#34C759]/10',
+    primary: 'text-[#007AFF] bg-[#007AFF]/10',
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-[#EAE7E0] shadow-sm hover:shadow-md transition-all group">
-      <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest leading-none">{title}</p>
+    <div className="theme-card p-6 hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300">
+      <p className="text-xs font-semibold text-[#86868B] mb-2">{title}</p>
       <div className="flex items-end justify-between">
-        <h3 className="text-xl font-display font-bold text-[#5C544E]">{value}</h3>
+        <h3 className="text-2xl font-bold text-[#1D1D1F] tracking-tight">{value}</h3>
       </div>
-      <div className="mt-4 pt-3 border-t border-[#F9F7F2]">
-        <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-tight", colors[color])}>
+      <div className="mt-4 pt-4 border-t border-[#F2F2F7]">
+        <span className={cn("text-[10px] font-bold px-2.5 py-1.5 rounded-lg tracking-wide uppercase", colors[color])}>
           {trend}
         </span>
       </div>

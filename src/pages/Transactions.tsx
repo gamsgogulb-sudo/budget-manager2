@@ -220,37 +220,37 @@ export default function Transactions() {
 
   return (
     <div className="relative min-h-[calc(100vh-120px)] pb-24">
-      {/* Expandable Calendar Section */}
-      <div className="mb-10 overflow-hidden px-1">
+      {/* Horizontal Calendar Section */}
+      <div className="mb-10 px-1">
         {/* Month Navigator Row */}
-        <div className="flex items-center justify-center py-2 mb-2">
-          <div className="flex items-center gap-6">
+        <div className="flex items-center justify-between py-2 mb-6">
+          <h1 className="text-2xl font-bold text-[#1D1D1F]">
+            {format(currentViewDate, 'yyyy년 M월', { locale: ko })}
+          </h1>
+          <div className="flex items-center gap-1 bg-[#F2F2F7] p-1 rounded-xl">
             <button 
               onClick={handlePrev}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+              className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-[#1D1D1F]"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="text-sm sm:text-base font-display font-bold text-[#5C544E] min-w-[120px] text-center">
-              {format(currentViewDate, 'yyyy년 M월', { locale: ko })}
-            </span>
             <button 
               onClick={handleNext}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+              className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-[#1D1D1F]"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Controls Row */}
+        {/* View Selection & Period Sync Controls */}
         <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex flex-1 items-center gap-1 bg-gray-100/50 p-1 rounded-2xl">
+          <div className="flex items-center gap-1 bg-[#F2F2F7] p-1 rounded-2xl">
             <button 
               onClick={() => setIsMonthlyView(true)}
               className={cn(
-                "flex-1 text-[10px] sm:text-[11px] font-bold py-2 px-3 rounded-xl transition-all",
-                isMonthlyView ? "bg-white text-[#8B9178] shadow-sm" : "text-gray-400 hover:text-[#5C544E]"
+                "px-6 py-2.5 rounded-[1rem] text-xs font-semibold transition-all",
+                isMonthlyView ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
               )}
             >
               월간
@@ -258,8 +258,8 @@ export default function Transactions() {
             <button 
               onClick={() => setIsMonthlyView(false)}
               className={cn(
-                "flex-1 text-[10px] sm:text-[11px] font-bold py-2 px-3 rounded-xl transition-all",
-                !isMonthlyView ? "bg-white text-[#8B9178] shadow-sm" : "text-gray-400 hover:text-[#5C544E]"
+                "px-6 py-2.5 rounded-[1rem] text-xs font-semibold transition-all",
+                !isMonthlyView ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
               )}
             >
               주간
@@ -268,22 +268,22 @@ export default function Transactions() {
           <button 
             onClick={() => setActiveFilterType('custom')}
             className={cn(
-              "flex-[0.8] text-[10px] sm:text-[11px] font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2",
-              dateRange ? "bg-[#8B9178] text-white shadow-md" : "bg-white text-[#5C544E] border border-[#EAE7E0] hover:border-[#D9D4C7]"
+              "theme-btn-secondary px-5 h-12 text-xs",
+              dateRange && "bg-[#007AFF] text-white"
             )}
           >
+            <CalendarIcon className="w-4 h-4" />
             <span>기간 설정</span>
-            {dateRange && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
           </button>
         </div>
 
         <motion.div 
           animate={{ height: 'auto' }}
-          className="pb-4 mt-4"
+          className="pb-4"
         >
           <div className="grid grid-cols-7 gap-1">
             {['일', '월', '화', '수', '목', '금', '토'].map(d => (
-              <div key={d} className="text-center text-[9px] font-bold text-gray-300 uppercase py-2">{d}</div>
+              <div key={d} className="text-center text-[11px] font-semibold text-[#86868B] py-2">{d}</div>
             ))}
             {(isMonthlyView ? monthDays : weekDays).map((day, idx) => {
               const dateKey = format(day, 'yyyy-MM-dd');
@@ -292,16 +292,14 @@ export default function Transactions() {
               const isTod = isToday(day);
               const isOtherMonth = isMonthlyView && day.getMonth() !== viewMonth.getMonth();
               
-              // Range Highlighting Logic
               const isInRange = dateRange && isWithinInterval(day, { start: dateRange.start, end: dateRange.end });
               const isRangeStart = dateRange && isSameDay(day, dateRange.start);
               const isRangeEnd = dateRange && isSameDay(day, dateRange.end);
 
-              const formatVal = (val: number, type: 'income' | 'expense') => {
-                const prefix = type === 'income' ? '+' : '-';
-                if (val >= 10000) return `${prefix}${(val / 10000).toFixed(1)}만`;
-                if (val >= 1000) return `${prefix}${(val / 1000).toFixed(1)}천`;
-                return `${prefix}${val.toLocaleString()}`;
+              const formatVal = (val: number) => {
+                if (val >= 10000) return `${(val / 10000).toFixed(0)}만`;
+                if (val >= 1000) return `${(val / 1000).toFixed(0)}천`;
+                return val.toLocaleString();
               };
 
               return (
@@ -312,32 +310,29 @@ export default function Transactions() {
                     setDateRange(null);
                   }}
                   className={cn(
-                    "flex flex-col items-center justify-between p-1.5 rounded-xl transition-all aspect-square relative",
-                    isOtherMonth ? "opacity-10 pointer-events-none" : "hover:bg-gray-50",
+                    "flex flex-col items-center justify-between py-2 rounded-2xl transition-all aspect-[4/5] relative",
+                    isOtherMonth ? "opacity-20 pointer-events-none" : "hover:bg-[#F2F2F7]",
                     isSel 
-                      ? "bg-[#8B9178] text-white shadow-lg z-20 scale-105" 
+                      ? "bg-[#1D1D1F] text-white shadow-xl z-20 scale-105" 
                       : isInRange
-                        ? "bg-[#8B9178]/10 text-[#5C544E] z-0"
-                        : "bg-transparent text-[#5C544E]",
-                    isRangeStart && "rounded-l-2xl bg-[#8B9178] text-white z-10",
-                    isRangeEnd && "rounded-r-2xl bg-[#8B9178] text-white z-10",
+                        ? "bg-[#007AFF]/10 text-[#1D1D1F] z-0"
+                        : "bg-transparent text-[#1D1D1F]",
+                    isRangeStart && "rounded-l-2xl bg-[#007AFF] text-white z-10",
+                    isRangeEnd && "rounded-r-2xl bg-[#007AFF] text-white z-10",
                     isInRange && !isRangeStart && !isRangeEnd && "rounded-none",
-                    isTod && !isSel && !isRangeStart && !isRangeEnd && "text-[#8B9178] ring-1 ring-[#8B9178]/20"
+                    isTod && !isSel && !isRangeStart && !isRangeEnd && "text-[#007AFF] font-bold"
                   )}
                 >
-                  <span className={cn(
-                    "text-[10px] font-bold z-10",
-                    (isSel || isRangeStart || isRangeEnd) ? "text-white" : ""
-                  )}>{format(day, 'd')}</span>
-                  <div className="w-full text-[7px] font-bold space-y-0.5 mt-auto overflow-hidden z-10">
+                  <span className="text-sm font-semibold">{format(day, 'd')}</span>
+                  <div className="w-full text-[8px] font-bold space-y-0.5 mt-1 overflow-hidden z-10 px-1">
                     {summary?.income > 0 && (
-                      <div className={cn("truncate text-emerald-500", (isSel || isRangeStart || isRangeEnd) ? "text-emerald-100" : "")}>
-                        {formatVal(summary.income, 'income')}
+                      <div className={cn("truncate text-[#34C759]", (isSel || isRangeStart || isRangeEnd) ? "text-white/80" : "")}>
+                        {formatVal(summary.income)}
                       </div>
                     )}
                     {summary?.expense > 0 && (
-                      <div className={cn("truncate text-[#A67C52]", (isSel || isRangeStart || isRangeEnd) ? "text-[#E6D5C5]" : "")}>
-                        {formatVal(summary.expense, 'expense')}
+                      <div className={cn("truncate text-[#FF3B30]", (isSel || isRangeStart || isRangeEnd) ? "text-white/80" : "")}>
+                        {formatVal(summary.expense)}
                       </div>
                     )}
                   </div>
@@ -348,132 +343,127 @@ export default function Transactions() {
         </motion.div>
       </div>
 
-      {/* Search and Filters Section */}
+      {/* Control Tools Section */}
       <div className="mb-8 space-y-4">
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#8B9178] transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#86868B] group-focus-within:text-[#007AFF] transition-colors" />
           <input 
             type="text" 
-            placeholder="내용, 카테고리, 결제수단 검색..."
+            placeholder="기록 검색 및 필터링..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-[#EAE7E0] hover:border-[#D9D4C7] focus:border-[#8B9178] focus:ring-0 rounded-2xl py-4 pl-12 pr-4 text-xs font-bold text-[#5C544E] shadow-sm transition-all"
+            className="w-full h-12 bg-[#F2F2F7] border-transparent focus:bg-white focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] rounded-2xl pl-12 pr-4 text-sm font-medium text-[#1D1D1F] transition-all"
           />
-          {searchTerm && (
-            <button 
-              onClick={() => setSearchTerm('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-300 hover:text-[#5C544E] transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           <button 
             onClick={() => setActiveFilterType('type')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap border",
+              "h-10 px-5 rounded-full text-xs font-semibold transition-all whitespace-nowrap border",
               filters.types.length > 0
-                ? "bg-[#8B9178] text-white border-[#8B9178] shadow-md"
-                : "bg-white text-[#5C544E] border-[#EAE7E0] hover:border-[#D9D4C7]"
+                ? "bg-[#007AFF] text-white border-transparent"
+                : "bg-white text-[#1D1D1F] border-gray-200 hover:border-gray-300 shadow-sm"
             )}
           >
-            <Filter className="w-3 h-3" />
-            <span>거래 타입 {filters.types.length > 0 && `(${filters.types.length})`}</span>
+            거래 타입 {filters.types.length > 0 && `(${filters.types.length})`}
           </button>
 
           <button 
             onClick={() => setActiveFilterType('status')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap border",
+              "h-10 px-5 rounded-full text-xs font-semibold transition-all whitespace-nowrap border",
               filters.settlementStatuses.length > 0
-                ? "bg-[#A67C52] text-white border-[#A67C52] shadow-md"
-                : "bg-white text-[#5C544E] border-[#EAE7E0] hover:border-[#D9D4C7]"
+                ? "bg-[#5856D6] text-white border-transparent"
+                : "bg-white text-[#1D1D1F] border-gray-200 hover:border-gray-300 shadow-sm"
             )}
           >
-            <Filter className="w-3 h-3" />
-            <span>정산 상태 {filters.settlementStatuses.length > 0 && `(${filters.settlementStatuses.length})`}</span>
+            정산 상태 {filters.settlementStatuses.length > 0 && `(${filters.settlementStatuses.length})`}
           </button>
+
+          {(filters.types.length > 0 || filters.settlementStatuses.length > 0 || searchTerm !== '') && (
+            <button 
+              onClick={clearFilters}
+              className="h-10 px-4 text-xs font-semibold text-[#FF3B30] hover:bg-red-50 rounded-full transition-all"
+            >
+              필터 초기화
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Transaction List - Box removed for cleaner data density */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between pb-4 border-b border-[#EAE7E0]">
-          <h2 className="font-display font-bold text-lg text-[#5C544E]">
+      {/* Transaction List */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between pb-2 border-b border-[#F2F2F7]">
+          <h2 className="font-bold text-lg text-[#1D1D1F]">
             {dateRange 
-              ? `${format(dateRange.start, 'MM.dd')} - ${format(dateRange.end, 'MM.dd')} 내역` 
+              ? `${format(dateRange.start, 'MM.dd')} - ${format(dateRange.end, 'MM.dd')}` 
               : `${format(selectedDate, 'M월 d일')} 내역`}
           </h2>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={handleDownloadExcel}
-              disabled={transactions.length === 0}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#D9D4C7] rounded-lg text-[10px] font-bold text-[#5C544E] hover:bg-gray-50 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FileDown className="w-3.5 h-3.5 text-[#8B9178]" />
-              <span>EXCEL 추출</span>
-            </button>
-          </div>
+          <button 
+            onClick={handleDownloadExcel}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#86868B] hover:text-[#1D1D1F] transition-all"
+          >
+            <FileDown className="w-4 h-4" />
+            <span>Excel</span>
+          </button>
         </div>
 
-        <div className="overflow-x-auto hidden sm:block">
+        <div className="hidden sm:block">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-[#5C544E]">
-                <th className="px-4 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">일자</th>
-                <th className="px-4 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">세부 분류</th>
-                <th className="px-4 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">내용</th>
-                <th className="px-4 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right border-b border-gray-100">금액</th>
-                <th className="px-4 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">통장/카드</th>
-                <th className="px-4 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right border-b border-gray-100">관리</th>
+              <tr className="text-[#86868B]">
+                <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest border-b border-[#F2F2F7]">날짜/정산</th>
+                <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest border-b border-[#F2F2F7]">분류</th>
+                <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest border-b border-[#F2F2F7]">내용</th>
+                <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-right border-b border-[#F2F2F7]">금액</th>
+                <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest border-b border-[#F2F2F7]">방법</th>
+                <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-right border-b border-[#F2F2F7]">관리</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#F2F2F7]">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-20 text-center text-slate-400 font-medium">내역을 불러오는 중...</td>
+                  <td colSpan={6} className="px-4 py-16 text-center text-[#86868B] font-medium italic">불러오는 중...</td>
                 </tr>
               ) : filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-20 text-center text-slate-400 font-medium">검색 결과가 없습니다. 다시 검색해보세요!</td>
+                  <td colSpan={6} className="px-4 py-16 text-center text-[#86868B] font-medium italic">검색 결과가 없습니다.</td>
                 </tr>
               ) : (
                 filteredTransactions.map((t) => (
-                  <tr key={t.id} className="hover:bg-white transition-all group">
-                    <td className="px-4 py-5 whitespace-nowrap">
+                  <tr key={t.id} className="hover:bg-[#F5F5F7] transition-all group">
+                    <td className="px-4 py-5">
                       <div className="flex flex-col">
-                        <span className="text-xs text-[#5C544E] font-bold">{formatDate(t.date)}</span>
+                        <span className="text-xs text-[#1D1D1F] font-semibold">{formatDate(t.date)}</span>
                         <span className={cn(
-                          "text-[9px] font-bold uppercase",
-                          t.settlementStatus === '완료' ? "text-emerald-500" : "text-amber-500"
+                          "text-[10px] font-bold",
+                          t.settlementStatus === '완료' ? "text-[#34C759]" : "text-[#FF9500]"
                         )}>{t.settlementStatus || 'N/A'}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-5 whitespace-nowrap">
-                      <span className="px-3 py-1.5 bg-[#F2EFE9] text-[#5C544E] rounded-md text-[10px] font-bold uppercase tracking-tight">
-                        {t.subCategory || '분류없음'}
+                    <td className="px-4 py-5">
+                      <span className="px-2.5 py-1 bg-[#F2F2F7] text-[#1D1D1F] rounded-lg text-[10px] font-semibold">
+                        {t.subCategory || '분분류없음'}
                       </span>
                     </td>
-                    <td className="px-4 py-5 whitespace-nowrap">
+                    <td className="px-4 py-5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[#3D3D3D] font-bold text-sm">{t.memo}</span>
+                        <span className="text-[#1D1D1F] font-semibold text-sm">{t.memo}</span>
                         {((t.photoUrls && t.photoUrls.length > 0) || t.photoUrl) && (
                           <ImageIcon className="w-3.5 h-3.5 text-gray-300" />
                         )}
                       </div>
                     </td>
                     <td className={cn(
-                      "px-4 py-5 whitespace-nowrap text-right font-display font-bold text-sm",
-                      t.type === 'income' ? 'text-emerald-600' : 
-                      t.type === 'expense' ? 'text-[#A67C52]' :
-                      t.type === 'balance_adj' ? 'text-blue-600' : 'text-amber-600'
+                      "px-4 py-5 text-right font-bold text-sm",
+                      t.type === 'income' ? 'text-[#34C759]' : 
+                      t.type === 'expense' ? 'text-[#FF3B30]' :
+                      t.type === 'balance_adj' ? 'text-[#007AFF]' : 'text-[#FF9500]'
                     )}>
                       {t.type === 'income' ? '₩' : t.type === 'expense' ? '-₩' : ''}{t.amount.toLocaleString()}
-                      {t.type === 'balance_adj' && <span className="text-[9px] ml-1 opacity-50">(정정)</span>}
                     </td>
-                    <td className="px-4 py-5 whitespace-nowrap text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                    <td className="px-4 py-5 text-[10px] text-[#86868B] font-semibold">
                       {t.type === 'transfer' ? (
                         <div className="flex items-center gap-1">
                           <span>{t.paymentMethod}</span>
@@ -482,17 +472,17 @@ export default function Transactions() {
                         </div>
                       ) : t.paymentMethod}
                     </td>
-                    <td className="px-4 py-5 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-4 py-5 text-right">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                           onClick={() => handleEdit(t)}
-                          className="p-2 hover:bg-[#D9D4C7] rounded-lg text-[#5C544E] transition-all"
+                          className="p-1.5 hover:bg-gray-200 rounded-lg text-[#1D1D1F] transition-all"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDelete(t.id)}
-                          className="p-2 hover:bg-rose-100 rounded-lg text-rose-500 transition-all"
+                          className="p-1.5 hover:bg-red-50 rounded-lg text-[#FF3B30] transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -505,53 +495,38 @@ export default function Transactions() {
           </table>
         </div>
 
-        {/* Mobile List View */}
-        <div className="sm:hidden divide-y divide-gray-100 uppercase tracking-tighter">
+        {/* Mobile Minimal List View */}
+        <div className="sm:hidden space-y-1">
           {loading ? (
-             <div className="p-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">불러오는 중...</div>
+             <div className="p-10 text-center text-[#86868B] text-xs font-semibold italic">불러오는 중...</div>
           ) : filteredTransactions.length === 0 ? (
-             <div className="p-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">검색 결과가 없습니다.</div>
+             <div className="p-10 text-center text-[#86868B] text-xs font-semibold italic">검색 결과가 없습니다.</div>
           ) : (
             filteredTransactions.map((t) => {
-              const TypeIcon = t.type === 'income' ? ArrowUpRight : 
-                              t.type === 'expense' ? ArrowDownLeft :
-                              t.type === 'balance_adj' ? Scale : ArrowRightLeft;
-              const typeColor = t.type === 'income' ? "bg-emerald-50 text-emerald-600" : 
-                               t.type === 'expense' ? "bg-rose-50 text-rose-600" :
-                               t.type === 'balance_adj' ? "bg-blue-50 text-blue-600" : "bg-amber-50 text-amber-600";
-              const amountColor = t.type === 'income' ? 'text-emerald-600' : 
-                                 t.type === 'expense' ? 'text-[#A67C52]' :
-                                 t.type === 'balance_adj' ? 'text-blue-600' : 'text-amber-600';
+              const amountColor = t.type === 'income' ? 'text-[#34C759]' : 
+                                 t.type === 'expense' ? 'text-[#FF3B30]' :
+                                 t.type === 'balance_adj' ? 'text-[#007AFF]' : 'text-[#FF9500]';
 
               return (
-                <div key={t.id} className="py-5 flex items-center justify-between active:bg-gray-50 transition-colors" onClick={() => handleEdit(t)}>
-                  <div className="flex items-center gap-4">
-                    <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm", typeColor)}>
-                      <TypeIcon className="w-5 h-5" />
+                <div key={t.id} className="py-4 flex items-center justify-between active:bg-[#F2F2F7] transition-colors rounded-2xl px-2" onClick={() => handleEdit(t)}>
+                  <div className="flex flex-col min-w-0 pr-4">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-sm font-semibold text-[#1D1D1F] truncate">{t.memo}</span>
+                      {((t.photoUrls && t.photoUrls.length > 0) || t.photoUrl) && (
+                        <ImageIcon className="w-3 h-3 text-gray-300 shrink-0" />
+                      )}
                     </div>
-
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-sm font-bold text-[#3D3D3D] truncate">{t.memo}</span>
-                        {((t.photoUrls && t.photoUrls.length > 0) || t.photoUrl) && (
-                          <ImageIcon className="w-3 h-3 text-gray-300 shrink-0" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <span className="text-[10px] text-gray-400 font-bold uppercase tracking-normal">{formatDate(t.date).slice(5)}</span>
-                         <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
-                         <span className="text-[10px] font-bold text-[#8B9178] uppercase">{t.subCategory || '분류없음'}</span>
-                      </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                       <span className="text-[10px] font-bold text-[#007AFF]">{t.subCategory || '분류없음'}</span>
+                       <span className="w-0.5 h-0.5 bg-gray-300 rounded-full"></span>
+                       <span className="text-[10px] text-[#86868B] font-medium">{t.paymentMethod}</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={cn("text-sm font-display font-bold", amountColor)}>
+                  <div className="text-right shrink-0">
+                    <p className={cn("text-base font-bold tracking-tight", amountColor)}>
                       {t.type === 'income' ? '₩' : t.type === 'expense' ? '-₩' : ''}{t.amount.toLocaleString()}
-                      {t.type === 'balance_adj' && <span className="text-[9px] ml-1 opacity-50">(정정)</span>}
                     </p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                      {t.type === 'transfer' ? `${t.paymentMethod} → ${t.settledToAccount}` : t.paymentMethod}
-                    </p>
+                    <p className="text-[9px] text-[#86868B] font-bold uppercase tracking-wider">{formatDate(t.date).slice(5)}</p>
                   </div>
                 </div>
               );
@@ -577,60 +552,65 @@ export default function Transactions() {
               setEditingTransaction(undefined);
               setIsModalOpen(true);
             }}
-            className="fixed bottom-24 right-6 w-16 h-16 bg-[#8B9178] text-white rounded-full flex items-center justify-center shadow-2xl shadow-[#8B9178]/40 hover:bg-[#6B705C] hover:scale-110 active:scale-95 transition-all z-30 group"
+            className="fixed bottom-24 right-6 w-14 h-14 bg-[#007AFF] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(0,122,255,0.3)] hover:scale-110 active:scale-95 transition-all z-[30] group"
             aria-label="Add Transaction"
           >
-            <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
+            <Plus className="w-7 h-7" />
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Filter Drawer (Bottom Sheet) */}
+      {/* Filter Bottom Sheet */}
       <AnimatePresence>
         {activeFilterType && (
-          <>
+          <div className="fixed inset-0 z-[60] flex items-end justify-center">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setActiveFilterType(null)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              className="absolute inset-0 bg-black/30 backdrop-blur-[4px]"
             />
             <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 bg-white rounded-t-[2.5rem] z-[60] shadow-2xl border-t border-[#EAE7E0] max-h-[80vh] overflow-hidden flex flex-col"
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
             >
-              <div className="p-6 border-b border-[#F9F7F2] flex items-center justify-between bg-[#FDFCF8]">
+              <div className="w-full flex justify-center pt-4 pb-2">
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+              </div>
+
+              <div className="px-6 py-4 border-b border-[#F2F2F7] flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-display font-bold text-[#5C544E]">
-                    {activeFilterType === 'type' ? '거래 타입 필터' : 
-                     activeFilterType === 'status' ? '정산 상태 필터' : '기간 설정 및 범위조회'}
+                  <h3 className="text-lg font-bold text-[#1D1D1F]">
+                    {activeFilterType === 'type' ? '거래 타입' : 
+                     activeFilterType === 'status' ? '정산 상태' : '조회 기간 설정'}
                   </h3>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                    {activeFilterType === 'custom' ? '조회하려는 시작일과 종료일을 지정하세요' : '다중 선택이 가능합니다'}
+                  <p className="text-[11px] font-medium text-[#86868B] mt-0.5">
+                    {activeFilterType === 'custom' ? '조회하려는 범위를 선택하세요' : '조건을 선택하여 필터링합니다'}
                   </p>
                 </div>
                 <button 
                   onClick={() => setActiveFilterType(null)}
-                  className="w-10 h-10 rounded-full bg-white border border-[#EAE7E0] flex items-center justify-center text-gray-400 hover:text-[#5C544E] transition-colors shadow-sm"
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-6 h-6" />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 sm:p-8">
                 {activeFilterType === 'custom' ? (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase">시작일</label>
+                        <label className="text-xs font-semibold text-[#86868B] ml-1">시작일</label>
                         <input 
                           type="date" 
+                          style={{ maxWidth: '100%' }}
                           value={dateRange?.start ? format(dateRange.start, 'yyyy-MM-dd') : ''}
-                          className="w-full bg-[#F9F7F2] border-[#EAE7E0] rounded-xl p-3 text-xs font-bold"
+                          className="theme-input w-full appearance-none"
                           onChange={(e) => {
                             const date = e.target.value ? new Date(e.target.value) : today;
                             setDateRange(prev => ({ start: date, end: prev?.end || today }));
@@ -638,11 +618,12 @@ export default function Transactions() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase">종료일</label>
+                        <label className="text-xs font-semibold text-[#86868B] ml-1">종료일</label>
                         <input 
                           type="date" 
+                          style={{ maxWidth: '100%' }}
                           value={dateRange?.end ? format(dateRange.end, 'yyyy-MM-dd') : ''}
-                          className="w-full bg-[#F9F7F2] border-[#EAE7E0] rounded-xl p-3 text-xs font-bold"
+                          className="theme-input w-full appearance-none"
                           onChange={(e) => {
                             const date = e.target.value ? new Date(e.target.value) : today;
                             setDateRange(prev => ({ start: prev?.start || today, end: date }));
@@ -651,99 +632,74 @@ export default function Transactions() {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">빠른 기간 선택</p>
+                    <div className="space-y-4">
+                      <p className="text-xs font-semibold text-[#86868B] ml-1 uppercase tracking-wider">주요 기간 선택</p>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <button 
-                          onClick={() => {
-                            setDateRange(null);
-                            setSelectedDate(today);
-                            setActiveFilterType(null);
-                          }}
-                          className="p-3 bg-[#F9F7F2] rounded-xl border border-[#EAE7E0] text-[10px] font-bold text-[#5C544E] hover:bg-[#8B9178] hover:text-white transition-all text-center"
-                        >
-                          전체
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setDateRange({ start: startOfQuarter(today), end: today });
-                            setActiveFilterType(null);
-                          }}
-                          className="p-3 bg-[#F9F7F2] rounded-xl border border-[#EAE7E0] text-[10px] font-bold text-[#5C544E] hover:bg-[#8B9178] hover:text-white transition-all text-center"
-                        >
-                          이번 분기
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setDateRange({ start: startOfMonth(today), end: today });
-                            setActiveFilterType(null);
-                          }}
-                          className="p-3 bg-[#F9F7F2] rounded-xl border border-[#EAE7E0] text-[10px] font-bold text-[#5C544E] hover:bg-[#8B9178] hover:text-white transition-all text-center"
-                        >
-                          이번 달
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setDateRange({ start: startOfWeek(today, { weekStartsOn: 0 }), end: today });
-                            setActiveFilterType(null);
-                          }}
-                          className="p-3 bg-[#F9F7F2] rounded-xl border border-[#EAE7E0] text-[10px] font-bold text-[#5C544E] hover:bg-[#8B9178] hover:text-white transition-all text-center"
-                        >
-                          이번 주
-                        </button>
+                        {[
+                          { label: '전체 (오늘)', onClick: () => { setDateRange(null); setSelectedDate(today); } },
+                          { label: '이번 분기', onClick: () => setDateRange({ start: startOfQuarter(today), end: today }) },
+                          { label: '이번 달', onClick: () => setDateRange({ start: startOfMonth(today), end: today }) },
+                          { label: '이번 주', onClick: () => setDateRange({ start: startOfWeek(today, { weekStartsOn: 0 }), end: today }) }
+                        ].map((btn, i) => (
+                          <button 
+                            key={i}
+                            onClick={() => { btn.onClick(); setActiveFilterType(null); }}
+                            className="theme-btn-secondary w-full text-xs font-semibold"
+                          >
+                            {btn.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {activeFilterType === 'type' ? (
-                      <>
-                        {[
-                          { label: '전체', value: 'all' },
-                          { label: '수입', value: 'income' },
-                          { label: '지출', value: 'expense' },
-                          { label: '이동', value: 'transfer' }
-                        ].map((item) => {
-                          const isSelected = item.value === 'all' 
-                            ? filters.types.length === 0 
-                            : filters.types.includes(item.value);
-                          
-                          return (
-                            <button
-                              key={item.value}
-                              onClick={() => {
-                                if (item.value === 'all') {
-                                  setFilters(prev => ({ ...prev, types: [] }));
-                                } else {
-                                  toggleFilter('types', item.value);
-                                }
-                              }}
-                              className={cn(
-                                "flex items-center justify-between p-4 rounded-2xl border transition-all text-left",
-                                isSelected 
-                                  ? "bg-[#8B9178]/5 border-[#8B9178] text-[#8B9178]" 
-                                  : "bg-white border-[#EAE7E0] text-[#5C544E] hover:border-[#D9D4C7]"
-                              )}
-                            >
-                              <span className="text-sm font-bold">{item.label}</span>
-                              {isSelected && <Check className="w-4 h-4" />}
-                            </button>
-                          );
-                        })}
-                      </>
+                      [
+                        { label: '전체', value: 'all' },
+                        { label: '수입 (+)', value: 'income' },
+                        { label: '지출 (-)', value: 'expense' },
+                        { label: '이동 (⇄)', value: 'transfer' }
+                      ].map((item) => {
+                        const isSelected = item.value === 'all' 
+                          ? filters.types.length === 0 
+                          : filters.types.includes(item.value);
+                        
+                        return (
+                          <button
+                            key={item.value}
+                            onClick={() => {
+                              if (item.value === 'all') {
+                                setFilters(prev => ({ ...prev, types: [] }));
+                              } else {
+                                toggleFilter('types', item.value);
+                              }
+                            }}
+                            className={cn(
+                              "flex items-center justify-between p-4 rounded-2xl border transition-all h-16",
+                              isSelected 
+                                ? "bg-blue-50 border-blue-100 text-[#007AFF]" 
+                                : "bg-[#F5F5F7] border-transparent text-[#1D1D1F] hover:bg-[#E8E8ED]"
+                            )}
+                          >
+                            <span className="text-sm font-semibold">{item.label}</span>
+                            {isSelected && <Check className="w-5 h-5" />}
+                          </button>
+                        );
+                      })
                     ) : (
                       <>
                         <button
                           onClick={() => setFilters(prev => ({ ...prev, settlementStatuses: [] }))}
                           className={cn(
-                            "flex items-center justify-between p-4 rounded-2xl border transition-all text-left",
+                            "flex items-center justify-between p-4 rounded-2xl border transition-all h-16",
                             filters.settlementStatuses.length === 0 
-                              ? "bg-[#A67C52]/5 border-[#A67C52] text-[#A67C52]" 
-                              : "bg-white border-[#EAE7E0] text-[#5C544E] hover:border-[#D9D4C7]"
+                              ? "bg-blue-50 border-blue-100 text-[#007AFF]" 
+                              : "bg-[#F5F5F7] border-transparent text-[#1D1D1F] hover:bg-[#E8E8ED]"
                           )}
                         >
-                          <span className="text-sm font-bold">전체</span>
-                          {filters.settlementStatuses.length === 0 && <Check className="w-4 h-4" />}
+                          <span className="text-sm font-semibold">전체 상태</span>
+                          {filters.settlementStatuses.length === 0 && <Check className="w-5 h-5" />}
                         </button>
                         {settlementOptions.map(option => {
                           const isSelected = filters.settlementStatuses.includes(option);
@@ -752,14 +708,14 @@ export default function Transactions() {
                               key={option}
                               onClick={() => toggleFilter('settlementStatuses', option)}
                               className={cn(
-                                "flex items-center justify-between p-4 rounded-2xl border transition-all text-left",
+                                "flex items-center justify-between p-4 rounded-2xl border transition-all h-16",
                                 isSelected 
-                                  ? "bg-[#A67C52]/5 border-[#A67C52] text-[#A67C52]" 
-                                  : "bg-white border-[#EAE7E0] text-[#5C544E] hover:border-[#D9D4C7]"
+                                  ? "bg-blue-50 border-blue-100 text-[#007AFF]" 
+                                  : "bg-[#F5F5F7] border-transparent text-[#1D1D1F] hover:bg-[#E8E8ED]"
                               )}
                             >
-                              <span className="text-sm font-bold">{option}</span>
-                              {isSelected && <Check className="w-4 h-4" />}
+                              <span className="text-sm font-semibold">{option}</span>
+                              {isSelected && <Check className="w-5 h-5" />}
                             </button>
                           );
                         })}
@@ -769,16 +725,17 @@ export default function Transactions() {
                 )}
               </div>
 
-              <div className="p-6 bg-white border-t border-[#F9F7F2]">
+              <div className="p-6 pt-0 bg-white">
                 <button 
                   onClick={() => setActiveFilterType(null)}
-                  className="w-full py-4 bg-[#5C544E] text-white rounded-2xl font-bold hover:bg-[#3D3D3D] transition-all shadow-lg shadow-[#5C544E]/20"
+                  className="theme-btn-primary w-full shadow-lg shadow-blue-500/20"
                 >
-                  필터 적용하기
+                  필터 적용
                 </button>
+                <div className="h-6" />
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </div>

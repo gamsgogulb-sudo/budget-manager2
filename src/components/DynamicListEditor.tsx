@@ -63,53 +63,59 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ y: '100%', opacity: 0.5 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0.5 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl overflow-hidden border border-[#EAE7E0]"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100"
           >
-            <div className="p-6 border-b border-[#F9F7F2] flex items-center justify-between bg-[#FDFCF8]">
-              <div className="flex items-center gap-3">
+            <div className="w-full flex justify-center pt-4 pb-1 sm:hidden">
+              <div className="w-10 h-1 bg-gray-100 rounded-full" />
+            </div>
+
+            <div className="p-8 pb-6 border-b border-gray-50 flex items-center justify-between">
+              <div className="flex items-center gap-4">
                 <div className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center text-white",
-                  type === 'subCategory' ? "bg-[#6B705C]" : "bg-[#A67C52]"
+                  "w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-white",
+                  type === 'subCategory' ? "bg-[#007AFF] shadow-[#007AFF]/20" : "bg-[#1D1D1F]"
                 )}>
-                  {type === 'subCategory' ? <Layers className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
+                  {type === 'subCategory' ? <Layers className="w-6 h-6" /> : <CreditCard className="w-6 h-6" />}
                 </div>
-                <h3 className="font-display font-bold text-[#5C544E]">
-                  {type === 'subCategory' ? '세부 카테고리 관리' : '통장 / 카드 관리'}
+                <h3 className="text-xl font-bold text-[#1D1D1F]">
+                  {type === 'subCategory' ? '분류 관리' : '결제 수단 관리'}
                 </h3>
               </div>
-              <button onClick={onClose} className="p-2 hover:bg-[#EAE7E0] rounded-full transition-colors">
-                <X className="w-5 h-5 text-[#5C544E]" />
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-6 h-6 text-[#86868B]" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6 max-h-[50vh] overflow-y-auto">
-              <form onSubmit={handleAdd} className="flex gap-2">
+            <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto">
+              <form onSubmit={handleAdd} className="flex gap-3">
                 <input
                   type="text"
-                  placeholder="새 항목 이름..."
+                  placeholder="새 항목 추가..."
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
-                  className="flex-1 bg-[#F9F7F2] border-[#EAE7E0] focus:border-[#8B9178] focus:ring-0 rounded-xl p-3 text-sm font-bold text-[#5C544E]"
+                  className="theme-input flex-1 font-bold"
                 />
                 <button type="submit" className={cn(
-                  "px-4 rounded-xl text-white shadow-lg transition-all",
-                  type === 'subCategory' ? "bg-[#6B705C] shadow-[#6B705C]/20" : "bg-[#A67C52] shadow-[#A67C52]/20"
+                  "theme-btn-primary w-14 h-14 p-0 shrink-0 rounded-[1.25rem]",
+                  type === 'subCategory' ? "bg-[#007AFF] shadow-[#007AFF]/20" : "bg-[#1D1D1F]"
                 )}>
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-7 h-7" />
                 </button>
               </form>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {items.length === 0 ? (
-                  <p className="text-center py-10 text-gray-400 text-xs font-bold uppercase tracking-widest">등록된 항목이 없습니다</p>
+                  <div className="py-20 text-center">
+                    <p className="text-sm font-bold text-[#86868B] uppercase tracking-widest">목록이 비어있습니다</p>
+                  </div>
                 ) : (
                   items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-[#FDFCF8] border border-[#EAE7E0] rounded-xl group hover:border-[#D9D4C7] transition-all">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div key={item.id} className="flex items-center justify-between h-14 px-5 bg-[#F5F5F7] rounded-[1.25rem] group border border-transparent hover:border-[#007AFF]/20 transition-all">
+                      <div className="flex items-center gap-4 flex-1 min-w-0 h-full">
                         <button 
                           type="button"
                           onClick={() => {
@@ -117,27 +123,28 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                             fn(ledgerId, item.id, { isFavorite: !item.isFavorite });
                           }}
                           className={cn(
-                            "p-1.5 rounded-lg transition-all flex-shrink-0",
-                            item.isFavorite ? "text-amber-500 bg-amber-50" : "text-gray-300 hover:text-amber-200 hover:bg-amber-50/10"
+                            "w-9 h-9 rounded-[0.85rem] transition-all flex-shrink-0 shadow-sm flex items-center justify-center",
+                            item.isFavorite ? "text-[#007AFF] bg-white" : "text-[#86868B] hover:bg-white bg-white/50"
                           )}
                         >
                           <Star className={cn("w-4 h-4", item.isFavorite && "fill-current")} />
                         </button>
                         
                         {editingId === item.id ? (
-                          <div className="flex items-center gap-2 flex-1">
+                          <div className="flex items-center gap-2 flex-1 h-full">
                             <input
                               autoFocus
                               type="text"
                               value={editingValue}
                               onChange={(e) => setEditingValue(e.target.value)}
+                              onBlur={() => handleUpdate(item.id)}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') handleUpdate(item.id);
                                 if (e.key === 'Escape') setEditingId(null);
                               }}
-                              className="flex-1 bg-white border border-[#EAE7E0] rounded-lg px-2 py-1 text-sm font-bold text-[#5C544E] focus:ring-0 focus:border-[#8B9178]"
+                              className="flex-1 h-10 bg-white border-2 border-[#007AFF] rounded-[0.85rem] px-4 text-sm font-bold text-[#1D1D1F] focus:ring-0"
                             />
-                            <button onClick={() => handleUpdate(item.id)} className="text-[#8B9178]"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => handleUpdate(item.id)} className="p-2 text-[#007AFF]"><Check className="w-5 h-5" /></button>
                           </div>
                         ) : (
                           <span 
@@ -145,16 +152,16 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                               setEditingId(item.id);
                               setEditingValue(item.name);
                             }}
-                            className="text-sm font-bold text-[#5C544E] truncate cursor-pointer hover:text-[#8B9178]"
+                            className="text-base font-bold text-[#1D1D1F] truncate cursor-pointer hover:text-[#007AFF] flex-1 leading-none"
                           >
                             {item.name}
                           </span>
                         )}
                       </div>
                       <button 
-                        type="button"
-                        onClick={() => handleDelete(item.id)}
-                        className="p-2 text-rose-300 hover:text-rose-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                         type="button"
+                         onClick={() => handleDelete(item.id)}
+                         className="w-9 h-9 rounded-[0.85rem] text-[#FF3B30] hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 flex items-center justify-center"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -164,13 +171,13 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
               </div>
             </div>
             
-            <div className="p-6 bg-[#FDFCF8] border-t border-[#F9F7F2]">
+            <div className="p-8 border-t border-gray-50">
                <button 
-                type="button"
-                onClick={onClose}
-                className="w-full bg-[#EAE7E0] text-[#5C544E] py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#D9D4C7] transition-all"
+                 type="button"
+                 onClick={onClose}
+                 className="theme-btn-primary w-full"
                >
-                 완료
+                 수정 완료
                </button>
             </div>
           </motion.div>

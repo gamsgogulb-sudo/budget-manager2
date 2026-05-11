@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { LogOut, User, Users, Edit2, Check, X, Trash2 } from 'lucide-react';
+import { LogOut, User, Users, Edit2, Check, X, Trash2, CreditCard, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLedgers } from '../context/LedgerContext';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function Config() {
   const { logout, user } = useAuth();
-  const { currentLedger, updateLedger, deleteLedger } = useLedgers();
+  const { currentLedger, updateLedger, deleteLedger, ledgers, createLedger } = useLedgers();
   const navigate = useNavigate();
 
   const [isEditingLedger, setIsEditingLedger] = useState(false);
   const [ledgerName, setLedgerName] = useState(currentLedger?.name || '');
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newLedgerName, setNewLedgerName] = useState('');
 
   const handleLogout = async () => {
     await logout();
@@ -23,11 +25,6 @@ export default function Config() {
     if (!currentLedger || !ledgerName) return;
     await updateLedger(currentLedger.id, { name: ledgerName });
     setIsEditingLedger(false);
-  };
-
-  const handleDeleteLedger = async () => {
-    if (!currentLedger) return;
-    setShowDeleteConfirm(true);
   };
 
   const confirmDelete = async () => {
@@ -41,48 +38,94 @@ export default function Config() {
     }
   };
 
+  const handleCreateLedger = async () => {
+    if (!newLedgerName) return;
+    await createLedger(newLedgerName, 'personal');
+    setNewLedgerName('');
+    setShowCreateModal(false);
+  };
+
   return (
-    <div className="w-full space-y-8 pb-24 pt-6 relative">
+    <div className="w-full space-y-10 pb-24 relative">
+      <header className="mb-2">
+        <h1 className="text-3xl font-bold text-[#1D1D1F]">설정</h1>
+        <p className="text-[#86868B] font-medium text-sm mt-1">로그아웃 및 가계부 환경설정</p>
+      </header>
+
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
-          <div className="relative bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full border border-[#EAE7E0]">
-            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mb-6 mx-auto">
-              <Trash2 className="w-8 h-8" />
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/30 backdrop-blur-[4px]" 
+              onClick={() => setShowDeleteConfirm(false)} 
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-white rounded-[2.5rem] shadow-2xl p-8 max-w-sm w-full border border-gray-100"
+            >
+              <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-[#FF3B30] mb-6 mx-auto">
+                <Trash2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-[#1D1D1F] text-center mb-2">가계부 삭제</h3>
+              <p className="text-sm text-[#86868B] text-center mb-8 leading-relaxed font-medium">
+                정말로 <span className="font-bold text-[#1D1D1F]">'{currentLedger?.name}'</span> 가계부를 삭제하시겠습니까? 데이터는 복구할 수 없습니다.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={confirmDelete}
+                  className="theme-btn-primary bg-[#FF3B30] hover:bg-[#FF453A] w-full"
+                >
+                  네, 삭제하겠습니다
+                </button>
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="theme-btn-secondary w-full"
+                >
+                  취소
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <section className="space-y-4">
+        <h2 className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">나의 프로필</h2>
+        <div className="theme-card p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4 w-full">
+            <div className="w-14 h-14 bg-[#F5F5F7] rounded-full flex items-center justify-center text-[#86868B] border border-gray-100">
+              <User className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-display font-bold text-[#5C544E] text-center mb-2">가계부 삭제</h3>
-            <p className="text-sm text-gray-400 text-center mb-8 leading-relaxed">
-              정말로 <span className="font-bold text-[#5C544E]">'{currentLedger?.name}'</span> 가계부를 삭제하시겠습니까? 모든 내역과 공유 정보가 영구적으로 삭제되며 복구할 수 없습니다.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={confirmDelete}
-                className="w-full py-4 bg-rose-600 text-white rounded-2xl font-bold shadow-lg shadow-rose-600/20 active:scale-95 transition-all text-sm"
-              >
-                네, 삭제하겠습니다
-              </button>
-              <button 
-                onClick={() => setShowDeleteConfirm(false)}
-                className="w-full py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold active:scale-95 transition-all text-sm"
-              >
-                취소
-              </button>
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-bold text-[#1D1D1F] truncate">{user?.email}</p>
+              <p className="text-[10px] text-[#86868B] font-bold uppercase tracking-widest mt-1">Google Logged In</p>
             </div>
           </div>
+          <button 
+            onClick={handleLogout}
+            className="theme-btn-primary bg-[#1D1D1F] hover:bg-black w-full sm:w-auto"
+          >
+            <LogOut className="w-4 h-4" />
+            로그아웃
+          </button>
         </div>
-      )}
+      </section>
 
       {/* Current Ledger Settings */}
       {currentLedger && (
-        <section className="space-y-3">
+        <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">가계부 관리</h2>
+            <h2 className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">가계부 이름 수정</h2>
           </div>
           
-          <div className="theme-card p-6 space-y-6">
+          <div className="theme-card p-6">
             <div>
-              <label className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block mb-3">가계부 이름</label>
               {isEditingLedger ? (
                 <div className="flex flex-col gap-3">
                   <input
@@ -91,19 +134,19 @@ export default function Config() {
                     value={ledgerName}
                     onChange={(e) => setLedgerName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleUpdateLedger()}
-                    className="theme-input w-full font-bold text-[#5C544E]"
+                    className="theme-input w-full font-bold text-[#1D1D1F]"
                   />
                   <div className="flex gap-2">
                     <button 
                       onClick={handleUpdateLedger} 
-                      className="flex-1 py-3.5 bg-[#8B9178] text-white rounded-xl shadow-lg shadow-[#8B9178]/20 flex items-center justify-center gap-2 font-bold text-xs active:scale-95 transition-all"
+                      className="theme-btn-primary flex-1 bg-[#007AFF]"
                     >
                       <Check className="w-4 h-4" />
                       저장
                     </button>
                     <button 
                       onClick={() => setIsEditingLedger(false)} 
-                      className="px-6 py-3.5 bg-gray-100 text-gray-400 rounded-xl font-bold text-xs active:scale-95 transition-all"
+                      className="theme-btn-secondary flex-1"
                     >
                       취소
                     </button>
@@ -111,51 +154,78 @@ export default function Config() {
                 </div>
               ) : (
                 <div className="flex items-center justify-between group">
-                  <span 
-                    onClick={() => setIsEditingLedger(true)}
-                    className="text-lg font-display font-bold text-[#5C544E] cursor-pointer hover:text-[#8B9178] transition-colors"
-                  >
-                    {currentLedger.name}
-                  </span>
-                  <button onClick={() => setIsEditingLedger(true)} className="p-2 text-gray-300 hover:text-[#8B9178] transition-all">
-                    <Edit2 className="w-4 h-4" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-[#F5F5F7] rounded-xl flex items-center justify-center text-[#007AFF]">
+                       <CreditCard className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 
+                        onClick={() => setIsEditingLedger(true)}
+                        className="text-lg font-bold text-[#1D1D1F] cursor-pointer hover:text-[#007AFF] transition-colors"
+                      >
+                        {currentLedger.name}
+                      </h4>
+                      <p className="text-[9px] font-bold text-[#86868B] uppercase tracking-widest mt-0.5">Active Ledger</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsEditingLedger(true)} className="p-2 text-gray-300 hover:text-[#007AFF] transition-all">
+                    <Edit2 className="w-5 h-5" />
                   </button>
                 </div>
               )}
-            </div>
-
-            <div className="pt-6 border-t border-[#F9F7F2] flex items-center justify-between">
-               <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded-xl bg-[#8B9178]/10 flex items-center justify-center text-[#8B9178]">
-                  {currentLedger.type === 'shared' ? <Users className="w-5 h-5" /> : <User className="w-5 h-5" />}
-                 </div>
-                 <div>
-                    <h4 className="text-xs font-bold text-[#5C544E]">{currentLedger.type === 'shared' ? '공유 가계부' : '개인 가계부'}</h4>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Account Status</p>
-                 </div>
-               </div>
-               {currentLedger.type === 'shared' && (
-                 <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg uppercase tracking-tight">
-                   Members: {currentLedger.memberEmails.length}
-                 </span>
-               )}
             </div>
           </div>
         </section>
       )}
 
+      {/* Ledger Management List */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">전체 가계부</h2>
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="text-[11px] font-bold text-[#007AFF] uppercase hover:underline"
+          >
+            새 가계부 추가
+          </button>
+        </div>
+        
+        <div className="space-y-2">
+          {ledgers.map(ledger => (
+            <div key={ledger.id} className="theme-card p-4 flex items-center justify-between group hover:border-[#007AFF]/30 transition-all">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#F5F5F7] rounded-xl flex items-center justify-center text-[#86868B]">
+                   <CreditCard className="w-5 h-5" />
+                </div>
+                <span className="font-semibold text-[#1D1D1F] text-sm">{ledger.name}</span>
+              </div>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                 {ledger.ownerId === user?.uid && ledgers.length > 1 && (
+                    <button 
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="p-2 text-[#FF3B30] hover:bg-red-50 rounded-xl transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                 )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Danger Zone */}
-      {currentLedger && currentLedger.ownerId === user?.uid && (
-        <section className="space-y-3">
-          <h2 className="text-[10px] font-bold text-rose-400 uppercase tracking-widest px-1">DANGER ZONE</h2>
-          <div className="bg-rose-50/30 rounded-xl border border-rose-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      {currentLedger && currentLedger.ownerId === user?.uid && ledgers.length > 1 && (
+        <section className="space-y-4">
+          <h2 className="text-[11px] font-bold text-[#FF3B30] uppercase tracking-[0.15em] px-1">DANGER ZONE</h2>
+          <div className="bg-[#FF3B30]/5 rounded-[2rem] border border-[#FF3B30]/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-bold text-rose-800">가계부 삭제</h3>
-              <p className="text-xs text-rose-600 mt-1">삭제된 가계부는 복구할 수 없습니다. 모든 거래 내역과 멤버 설정이 삭제됩니다.</p>
+              <h3 className="text-sm font-bold text-[#1D1D1F]">가계부 삭제</h3>
+              <p className="text-xs text-[#86868B] font-medium mt-1">삭제된 가계부는 복구할 수 없습니다. 모든 거래 내역이 삭제됩니다.</p>
             </div>
             <button 
-              onClick={handleDeleteLedger}
-              className="w-full sm:w-auto px-6 py-3 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 transition-all flex items-center justify-center gap-2 active:scale-95"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full sm:w-auto theme-btn-primary bg-[#FF3B30] hover:bg-[#FF453A]"
             >
               <Trash2 className="w-4 h-4" />
               가계부 삭제하기
@@ -164,34 +234,74 @@ export default function Config() {
         </section>
       )}
 
-      {/* Account Settings */}
-      <section className="space-y-3">
-        <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">계정 및 보안</h2>
-        <div className="bg-white rounded-xl border border-[#EAE7E0] shadow-sm p-6">
-          <div className="flex flex-col items-center justify-between gap-6">
-            <div className="flex items-center gap-4 w-full">
-               <div className="w-12 h-12 bg-[#F9F7F2] rounded-xl flex items-center justify-center border border-[#EAE7E0] text-gray-400">
-                  <User className="w-6 h-6" />
-               </div>
-               <div className="min-w-0 flex-1">
-                 <p className="text-sm font-bold text-[#5C544E] truncate">{user?.email}</p>
-                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Google Logged In</p>
-               </div>
-            </div>
-            
-            <button 
-              onClick={handleLogout}
-              className="w-full px-8 py-3.5 bg-[#5C544E] text-white rounded-xl text-xs font-bold hover:bg-[#4A443F] shadow-lg shadow-[#5C544E]/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap active:scale-95"
+      {/* Create Ledger Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowCreateModal(false)}
+              className="absolute inset-0 bg-black/30 backdrop-blur-[4px]"
+            />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden"
             >
-              <LogOut className="w-4 h-4" />
-              로그아웃
-            </button>
+              <div className="w-full flex justify-center pt-4 pb-1 sm:hidden">
+                <div className="w-10 h-1 bg-gray-100 rounded-full" />
+              </div>
+              
+              <div className="p-8 pt-6 sm:pt-8">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-[#007AFF] rounded-xl flex items-center justify-center text-white">
+                    <Plus className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#1D1D1F]">새 가계부 만들기</h3>
+                </div>
+                <p className="text-sm text-[#86868B] font-medium mb-8">자산을 관리할 새로운 공간의 이름을 입력하세요.</p>
+                
+                <div className="space-y-8">
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">가계부 이름</label>
+                    <input
+                      type="text"
+                      required
+                      value={newLedgerName}
+                      onChange={(e) => setNewLedgerName(e.target.value)}
+                      placeholder="예: 2024 프로젝트 자금"
+                      className="theme-input w-full font-bold"
+                      autoFocus
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3 pb-4">
+                    <button 
+                      onClick={() => setShowCreateModal(false)}
+                      className="theme-btn-secondary flex-1"
+                    >
+                      취소
+                    </button>
+                    <button 
+                      onClick={handleCreateLedger}
+                      className="theme-btn-primary flex-1 shadow-lg shadow-[#007AFF]/20"
+                    >
+                      가계부 생성
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        )}
+      </AnimatePresence>
 
-      <div className="pt-8 text-center">
-        <p className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.4em]">Design with Purpose & Intention</p>
+      <div className="pt-12 text-center">
+        <p className="text-[10px] font-bold text-[#86868B] uppercase tracking-[0.4em]">Designed by MoMoney Team</p>
       </div>
     </div>
   );

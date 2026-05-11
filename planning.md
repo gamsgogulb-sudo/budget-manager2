@@ -5,17 +5,17 @@ MoMoney는 단순한 지출 기록을 넘어, 개인과 공동체의 자산을 �
 
 ## 2. 개발 단계 (Phases)
 
-### Phase 1: MVP (Minimum Viable Product)
-- **기초 아키텍처**: React + Tailwind CSS + Firebase(Auth/Firestore) 설정
-- **기본 가계부**: 지출/수입 CRUD (입력, 조회, 수정, 삭제)
-- **모드 전환**: 개인용/공유용 인터페이스 기본 구조
-- **대시보드 기초**: 수입/지출 내역 요약 및 통계 그래프
-- **설정**: 라이트/다크 테마 지원
+### Phase 1: MVP & UI Foundation (Completed)
+- **기초 아키텍처**: React + Tailwind CSS + Firebase(Auth/Firestore) 설정 완료
+- **디자인 시스템**: Apple iOS 스타일 테마화 및 `theme-*` 클래스 표준화 완료
+- **기본 가계부**: 지출/수입 CRUD 및 실시간 동기화 구현 완료
+- **다중 가계부**: 개인용/공유용 가계부 생성 및 전환 기능 완료
+- **파일 관리**: Google Drive 연동 영수증 업로드 및 미리보기 완료
 
-### Phase 2: 핵심 모듈 확장
-- **구독 관리**: 구독 리스트 관리 및 월별 예상 지출 계산
-- **투자 대시보드**: 계좌 정보(은행, 예수금) 및 주식 포트폴리오 관리 (매수/매도/수익률 계산)
-- **자산 연동**: ISA, 연금저축, IRP 등 항목 세분화
+### Phase 2: 핵심 모듈 확장 (In Progress)
+- **통계 고도화**: Recharts 기반의 기간별 소득/지출 분석 및 리포트 (Dashboard 개선)
+- **잔액 관리 최적화**: 이체 및 자산 조정(Adjustment) 로직 고도화
+- **UX 개선**: 거래 내역 필터링 속도 및 일별 요약 캘린더 인터페이스 최적화
 
 ### Phase 3: 외부 연동 및 고도화
 - **Google Sheets Sync**: Firestore 데이터를 구글 시트와 동기화

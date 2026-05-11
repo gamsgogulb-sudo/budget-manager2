@@ -275,63 +275,60 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-8 space-y-8 pb-32">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-8 space-y-10 pb-32">
               {/* 1. Classification */}
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">분류</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {transactionTypes.map((t) => (
-                    <button
-                      key={t.value}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, type: t.value })}
-                      className={cn(
-                        "py-3 rounded-2xl text-[11px] font-bold transition-all border-2",
-                        formData.type === t.value
-                          ? `${t.color} border-transparent text-white shadow-lg scale-[1.02]`
-                          : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
-                      )}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
+              <div className="space-y-4">
+                <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">거래 유형</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {transactionTypes.map((t) => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, type: t.value })}
+                        className={cn(
+                          "py-4 rounded-2xl text-xs font-bold transition-all border-2",
+                          formData.type === t.value
+                            ? "bg-[#1D1D1F] border-[#1D1D1F] text-white shadow-xl scale-[1.02]"
+                            : "bg-white border-gray-100 text-[#86868B] hover:border-gray-200"
+                        )}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
               </div>
 
               {/* 2. Amount */}
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+              <div className="space-y-4">
+                <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">
                   {formData.type === 'balance_adj' ? '기준 금액 (현재 잔액)' : '금액'}
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
                     type="number"
                     required
                     placeholder="0"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full bg-gray-50 border-transparent focus:bg-white focus:border-[#8B9178] focus:ring-0 rounded-2xl p-5 text-2xl font-display font-bold text-[#5C544E] text-right pr-14 transition-all"
+                    className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#007AFF] focus:ring-4 focus:ring-[#007AFF]/10 rounded-[2rem] p-6 text-3xl font-bold text-[#1D1D1F] text-right pr-16 transition-all"
                   />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-lg">원</span>
+                  <span className="absolute right-8 top-1/2 -translate-y-1/2 font-bold text-[#86868B] text-xl">원</span>
                 </div>
-                {formData.type === 'balance_adj' && (
-                  <p className="text-[10px] text-gray-400 ml-1 mt-1">이 금액으로 해당 통장의 잔액을 보정합니다.</p>
-                )}
               </div>
 
               {/* 3. Sub Category */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between ml-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">세부 분류</label>
+                  <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">분류</label>
                   <button
                     type="button"
                     onClick={() => {
                       setListEditorType('subCategory');
                       setIsListEditorOpen(true);
                     }}
-                    className="text-[9px] font-bold text-[#8B9178] hover:text-[#6B705C] transition-colors py-1 px-2 bg-[#8B9178]/5 rounded-lg"
+                    className="text-[11px] font-bold text-[#007AFF] hover:underline"
                   >
-                    편집 / 추가
+                    편집
                   </button>
                 </div>
                 <button
@@ -339,25 +336,25 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                   onClick={() => setSelectionState({ 
                     isOpen: true, 
                     type: 'subCategory', 
-                    title: '세부 분류 선택' 
+                    title: '분류 선택' 
                   })}
-                  className="w-full flex items-center justify-between p-4 bg-gray-50 border border-transparent hover:border-gray-200 rounded-2xl transition-all group"
+                  className="w-full flex items-center justify-between p-5 bg-[#F5F5F7] border border-transparent hover:bg-[#EBEBEB] rounded-[1.5rem] transition-all group"
                 >
                   <span className={cn(
-                    "text-sm font-bold",
-                    formData.subCategory ? "text-[#5C544E]" : "text-gray-400"
+                    "font-bold",
+                    formData.subCategory ? "text-[#1D1D1F]" : "text-[#86868B]"
                   )}>
-                    {formData.subCategory || '분류를 선택하세요'}
+                    {formData.subCategory || '지출 항목을 선택하세요'}
                   </span>
-                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-[#86868B] group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
 
               {/* 4. From Account / Payment Method */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between ml-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    {formData.type === 'transfer' ? '보내는 통장' : (formData.type === 'balance_adj' ? '대상 통장' : '통장 / 결제수단')}
+                  <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">
+                    {formData.type === 'transfer' ? '출금 통장' : (formData.type === 'balance_adj' ? '대상 통장' : '결제 수단 / 통장')}
                   </label>
                   <button
                     type="button"
@@ -365,9 +362,9 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                       setListEditorType('accountCard');
                       setIsListEditorOpen(true);
                     }}
-                    className="text-[9px] font-bold text-[#A67C52] hover:text-[#8B6540] transition-colors py-1 px-2 bg-[#A67C52]/5 rounded-lg"
+                    className="text-[11px] font-bold text-[#007AFF] hover:underline"
                   >
-                    편집 / 추가
+                    편집
                   </button>
                 </div>
                 <button
@@ -375,32 +372,32 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                   onClick={() => setSelectionState({ 
                     isOpen: true, 
                     type: 'accountCard', 
-                    title: formData.type === 'transfer' ? '보내는 통장 선택' : (formData.type === 'balance_adj' ? '대상 통장 선택' : '통장 / 결제수단 선택')
+                    title: formData.type === 'transfer' ? '출금 통장 선택' : '결제 수단 선택'
                   })}
-                  className="w-full flex items-center justify-between p-4 bg-gray-50 border border-transparent hover:border-gray-200 rounded-2xl transition-all group"
+                  className="w-full flex items-center justify-between p-5 bg-[#F5F5F7] border border-transparent hover:bg-[#EBEBEB] rounded-[1.5rem] transition-all group"
                 >
                   <span className={cn(
-                    "text-sm font-bold",
-                    formData.paymentMethod ? "text-[#5C544E]" : "text-gray-400"
+                    "font-bold",
+                    formData.paymentMethod ? "text-[#1D1D1F]" : "text-[#86868B]"
                   )}>
-                    {formData.paymentMethod || (formData.type === 'transfer' ? '보내는 통장 선택' : '통장/카드를 선택하세요')}
+                    {formData.paymentMethod || '통장을 선택하세요'}
                   </span>
-                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-[#86868B] group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
 
               {/* Transfer: To Account */}
               {formData.type === 'transfer' && (
                 <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="space-y-3"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4"
                 >
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">받는 통장</label>
+                  <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">입금 통장</label>
                   <select
                     value={formData.settledToAccount}
                     onChange={(e) => setFormData({ ...formData, settledToAccount: e.target.value })}
-                    className="w-full bg-gray-50 border-transparent focus:bg-white focus:border-[#8B9178] focus:ring-0 rounded-2xl p-4 text-sm font-bold text-[#5C544E] transition-all"
+                    className="theme-input w-full"
                   >
                     <option value="">선택하세요</option>
                     {accountCards.map(acc => (
@@ -410,30 +407,44 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                 </motion.div>
               )}
 
-              {/* 5. Memo */}
-              <div className="space-y-3">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">내용 (선택)</label>
-                <input
-                  type="text"
-                  placeholder="지출 내역에 대한 메모를 입력하세요"
-                  value={formData.memo}
-                  onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
-                  className="w-full bg-gray-50 border-transparent focus:bg-white focus:border-[#8B9178] focus:ring-0 rounded-2xl p-4 text-sm font-bold text-[#5C544E] transition-all"
-                />
-              </div>
+              {/* 5. Date & Memo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">날짜</label>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        className="theme-input w-full appearance-none pr-10"
+                        style={{ maxWidth: '100%' }}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">메모 (선택)</label>
+                    <input
+                      type="text"
+                      placeholder="내용을 입력하세요"
+                      value={formData.memo}
+                      onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
+                      className="theme-input w-full"
+                    />
+                  </div>
+                </div>
 
               {/* 6. Receipts */}
               <div className="space-y-4">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">영수증 첨부</label>
-                <div className="flex flex-wrap gap-3">
-                  <label className="w-20 h-20 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all gap-1">
-                    <Plus className="w-5 h-5 text-gray-400" />
-                    <span className="text-[9px] font-bold text-gray-400">파일 추가</span>
+                <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">사진 / 영수증</label>
+                <div className="flex flex-wrap gap-4">
+                  <label className="w-24 h-24 bg-[#F5F5F7] border border-gray-200 rounded-[1.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-[#EBEBEB] transition-all gap-1 group">
+                    <Plus className="w-6 h-6 text-[#86868B] group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold text-[#86868B]">파일 추가</span>
                     <input type="file" multiple className="hidden" onChange={handleFileChange} />
                   </label>
-                  {/* Render existing photos from DB */}
+                  {/* Render existing photos */}
                   {formData.photoUrls.map((url, i) => (
-                    <div key={`db-${i}`} className="w-20 h-20 bg-gray-100 rounded-2xl relative group overflow-hidden border border-gray-100">
+                    <div key={`db-${i}`} className="w-24 h-24 bg-[#F5F5F7] rounded-[1.5rem] relative group overflow-hidden border border-gray-100">
                       <DriveImage 
                         url={url} 
                         accessToken={accessToken} 
@@ -442,20 +453,20 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                       <button 
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, photoUrls: prev.photoUrls.filter((_, idx) => idx !== i) }))}
-                        className="absolute top-1 right-1 bg-rose-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 bg-black/50 backdrop-blur-md text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
                   ))}
-                  {/* Render newly selected files */}
+                  {/* Render new files */}
                   {receiptFiles.map((f, i) => (
-                    <div key={i} className="w-20 h-20 bg-gray-100 rounded-2xl relative group overflow-hidden border border-gray-100">
+                    <div key={i} className="w-24 h-24 bg-[#F5F5F7] rounded-[1.5rem] relative group overflow-hidden border border-gray-100">
                       <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" />
                       <button 
                         type="button"
                         onClick={() => setReceiptFiles(prev => prev.filter((_, idx) => idx !== i))}
-                        className="absolute top-1 right-1 bg-rose-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 bg-black/50 backdrop-blur-md text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -466,7 +477,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
 
               {/* 7. Settlement Status */}
               <div className="space-y-4">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">정산 상태</label>
+                <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">정산 유무</label>
                 <div className="grid grid-cols-4 gap-2">
                   {settlementOptions.map((opt) => (
                     <button
@@ -474,10 +485,10 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                       type="button"
                       onClick={() => setFormData({ ...formData, settlementStatus: opt })}
                       className={cn(
-                        "py-3 rounded-xl text-[10px] font-bold transition-all border",
+                        "py-4 rounded-xl text-[11px] font-bold transition-all border",
                         formData.settlementStatus === opt
-                          ? "bg-[#6B705C] border-transparent text-white shadow-sm"
-                          : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                          ? "bg-[#1D1D1F] border-[#1D1D1F] text-white shadow-sm"
+                          : "bg-white border-gray-100 text-[#86868B] hover:border-gray-200"
                       )}
                     >
                       {opt}
@@ -490,29 +501,29 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                   <motion.div 
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100"
+                    className="grid grid-cols-2 gap-4 p-5 bg-[#F5F5F7] rounded-[1.5rem] border border-gray-100"
                   >
                     <div className="space-y-2">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase">정산한 통장</label>
+                      <label className="text-[10px] font-bold text-[#86868B] uppercase">보낸 통장</label>
                       <select
                         value={formData.settledFromAccount}
                         onChange={(e) => setFormData({ ...formData, settledFromAccount: e.target.value })}
-                        className="w-full bg-white border-gray-100 focus:border-[#8B9178] focus:ring-0 rounded-xl p-3 text-[11px] font-bold text-[#5C544E]"
+                        className="w-full bg-white border-gray-100 focus:border-[#007AFF] focus:ring-0 rounded-xl p-3 text-xs font-bold text-[#1D1D1F]"
                       >
-                        <option value="">선택하세요</option>
+                        <option value="">선택</option>
                         {accountCards.map(acc => (
                           <option key={acc.id} value={acc.name}>{acc.name}</option>
                         ))}
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[9px] font-bold text-gray-400 uppercase">정산받은 통장</label>
+                      <label className="text-[10px] font-bold text-[#86868B] uppercase">받은 통장</label>
                       <select
                         value={formData.settledToAccount}
                         onChange={(e) => setFormData({ ...formData, settledToAccount: e.target.value })}
-                        className="w-full bg-white border-gray-100 focus:border-[#8B9178] focus:ring-0 rounded-xl p-3 text-[11px] font-bold text-[#5C544E]"
+                        className="w-full bg-white border-gray-100 focus:border-[#007AFF] focus:ring-0 rounded-xl p-3 text-xs font-bold text-[#1D1D1F]"
                       >
-                        <option value="">선택하세요</option>
+                        <option value="">선택</option>
                         {accountCards.map(acc => (
                           <option key={acc.id} value={acc.name}>{acc.name}</option>
                         ))}
@@ -522,16 +533,14 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                 )}
               </div>
 
-              {/* Submit Button Sticky at Bottom */}
-              <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+              {/* Submit Button Sticky */}
+              <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none z-10">
                 <button
                   type="submit"
                   disabled={isUploading}
                   className={cn(
-                    "w-full max-w-2xl mx-auto py-4 sm:py-5 rounded-[1.5rem] font-bold shadow-xl transition-all flex items-center justify-center gap-3 pointer-events-auto active:scale-95",
-                    isUploading 
-                      ? "bg-gray-400 text-white cursor-wait" 
-                      : "bg-[#8B9178] text-white shadow-[#8B9178]/20 hover:bg-[#6B705C]"
+                    "theme-btn-primary w-full max-w-2xl mx-auto shadow-2xl pointer-events-auto",
+                    isUploading ? "bg-gray-400 text-white cursor-wait" : ""
                   )}
                 >
                   {isUploading ? (
@@ -543,8 +552,8 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                   ) : (
                     <Check className="w-5 h-5" />
                   )}
-                  <span className="uppercase tracking-[0.2em] text-xs">
-                    {isUploading ? '업로드 중...' : '저장하기'}
+                  <span className="tracking-widest text-sm">
+                    {isUploading ? '업로드 중...' : (editingTransaction ? '변경사항 저장' : '내역 추가하기')}
                   </span>
                 </button>
               </div>
@@ -569,27 +578,31 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0.5 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] sm:max-h-[70vh]"
+            className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] sm:max-h-[70vh]"
           >
-            <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-              <h3 className="font-display font-bold text-[#5C544E] ml-1">{selectionState.title}</h3>
+            <div className="w-full flex justify-center pt-4 pb-1">
+              <div className="w-10 h-1 bg-gray-100 rounded-full" />
+            </div>
+            
+            <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-[#1D1D1F]">{selectionState.title}</h3>
               <button 
                 onClick={() => setSelectionState({ ...selectionState, isOpen: false })}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-6 h-6 text-[#86868B]" />
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-8 pt-4 space-y-10">
               {/* Favorites Grouping */}
               {(selectionState.type === 'subCategory' ? subCategories : accountCards).filter(i => i.isFavorite).length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2 px-1">
-                    <Star className="w-3 h-3 text-amber-500 fill-current" />
-                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">자주 사용하는 항목</span>
+                    <Star className="w-3.5 h-3.5 text-[#007AFF] fill-current" />
+                    <span className="text-[11px] font-bold text-[#007AFF] uppercase tracking-[0.15em]">자주 사용하는 항목</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     {(selectionState.type === 'subCategory' ? subCategories : accountCards)
                       .filter(i => i.isFavorite)
                       .map((item) => (
@@ -597,15 +610,15 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                           key={item.id}
                           onClick={() => handleSelectOption(item.name)}
                           className={cn(
-                            "flex items-center gap-2 p-3 rounded-xl transition-all border text-left",
+                            "flex items-center gap-3 h-14 px-4 rounded-[1.25rem] transition-all border text-left",
                             (selectionState.type === 'subCategory' ? formData.subCategory : formData.paymentMethod) === item.name
-                              ? "bg-[#5C544E] border-[#5C544E] text-white"
-                              : "bg-white border-gray-100 text-[#5C544E] hover:border-gray-200"
+                              ? "bg-[#1D1D1F] border-[#1D1D1F] text-white shadow-lg"
+                              : "bg-white border-gray-100 text-[#1D1D1F] hover:bg-[#F5F5F7]"
                           )}
                         >
-                          <span className="font-bold text-xs truncate">{item.name}</span>
+                          <span className="font-bold text-xs truncate flex-1 leading-none">{item.name}</span>
                           {(selectionState.type === 'subCategory' ? formData.subCategory : formData.paymentMethod) === item.name && (
-                            <Check className="w-3 h-3 shrink-0 ml-auto" />
+                            <Check className="w-4 h-4 shrink-0" />
                           )}
                         </button>
                       ))}
@@ -614,8 +627,8 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
               )}
 
               {/* All Items Grouping */}
-              <div className="space-y-3">
-                <div className="px-1 text-[10px] font-bold text-gray-300 uppercase tracking-widest">전체 목록</div>
+              <div className="space-y-4">
+                <div className="px-1 text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">전체 목록</div>
                 <div className="space-y-2">
                   {(selectionState.type === 'subCategory' ? subCategories : accountCards)
                     .filter(i => !i.isFavorite || (selectionState.type === 'subCategory' ? subCategories : accountCards).filter(f => f.isFavorite).length === 0)
@@ -624,24 +637,25 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                         key={item.id}
                         onClick={() => handleSelectOption(item.name)}
                         className={cn(
-                          "w-full flex items-center justify-between p-4 rounded-2xl transition-all border",
+                          "w-full flex items-center justify-between h-14 px-5 rounded-[1.25rem] transition-all border",
                           (selectionState.type === 'subCategory' ? formData.subCategory : formData.paymentMethod) === item.name
-                            ? "bg-[#FDFCF8] border-[#8B9178] text-[#8B9178]"
-                            : "bg-white border-gray-100 text-[#5C544E] hover:border-[#EAE7E0]"
+                            ? "bg-[#F5F5F7] border-[#007AFF] text-[#007AFF]"
+                            : "bg-white border-transparent text-[#1D1D1F] hover:bg-[#F5F5F7]"
                         )}
                       >
-                        <div className="flex items-center gap-3">
-                          {item.isFavorite && <Star className="w-3 h-3 text-amber-500 fill-current" />}
-                          <span className="font-bold text-sm">{item.name}</span>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="font-bold text-sm truncate">{item.name}</span>
+                          {item.isFavorite && <Star className="w-3 h-3 text-[#007AFF] fill-current" />}
                         </div>
                         {(selectionState.type === 'subCategory' ? formData.subCategory : formData.paymentMethod) === item.name && (
-                          <Check className="w-4 h-4" />
+                          <Check className="w-5 h-5 flex-shrink-0" />
                         )}
                       </button>
                     ))}
                   {(selectionState.type === 'subCategory' ? subCategories : accountCards).length === 0 && (
-                    <div className="py-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">
-                      등록된 항목이 없습니다
+                    <div className="py-20 text-center">
+                      <p className="text-sm font-bold text-[#86868B] uppercase tracking-widest">항목이 없습니다</p>
+                      <p className="text-[10px] text-[#86868B] mt-2">상단 메뉴에서 항목을 추가해보세요</p>
                     </div>
                   )}
                 </div>
