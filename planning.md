@@ -1,7 +1,7 @@
-# MoMoney Development Plan & Roadmap
+# GULBZZUS Development Plan & Roadmap
 
 ## 1. 개요
-MoMoney는 단순한 지출 기록을 넘어, 개인과 공동체의 자산을 효율적으로 관리하고 투자 현황까지 한눈에 파악할 수 있는 올인원 가계부 서비스입니다.
+GULBZZUS는 단순한 지출 기록을 넘어, 개인과 공동체의 자산을 효율적으로 관리하고 투자 현황까지 한눈에 파악할 수 있는 올인원 가계부 서비스입니다.
 
 ## 2. 개발 단계 (Phases)
 
@@ -16,6 +16,7 @@ MoMoney는 단순한 지출 기록을 넘어, 개인과 공동체의 자산을 �
 - **통계 고도화**: Recharts 기반의 기간별 소득/지출 분석 및 리포트 (Dashboard 개선)
 - **잔액 관리 최적화**: 이체 및 자산 조정(Adjustment) 로직 고도화
 - **UX 개선**: 거래 내역 필터링 속도 및 일별 요약 캘린더 인터페이스 최적화
+- **UI 고도화**: 가계부 전환기(LedgerSwitcher) 시각적 피드백 강화 (선택 상태 스카이블루 강조)
 
 ### Phase 3: 외부 연동 및 고도화
 - **Google Sheets Sync**: Firestore 데이터를 구글 시트와 동기화

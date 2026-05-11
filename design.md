@@ -1,4 +1,4 @@
-# MoMoney Design System
+# GULBZZUS Design System
 
 ## 1. Aesthetic Recipe: "Apple iOS Modern Minimalist"
 - **Vibe**: Apple 특유의 절제미와 고급스러움을 담은 현대적인 금융 서비스 인터페이스.
@@ -26,7 +26,7 @@
     - **Height**: `h-14` (56px)로 통일하여 시인성과 터치 정확도 극대화.
     - **Radius**: `rounded-[1.25rem]` (20px)로 통일하여 일관성 유지.
     - **Font Weight**: 버튼은 `font-bold`를 사용하여 명확한 행동 유도.
-- **Lists (BottomSheet)**: 리스트 항목은 `h-14` 높이와 `px-5` 패딩을 기본으로 하며, 항목 간 간격보다는 배경색(`bg-[#F5F5F7]`)과 곡률로 구분.
+- **Lists (BottomSheet)**: 리스트 항목은 `h-14` 높이와 `px-5` 패딩을 기본으로 하며, 항목 간 영역 구분을 위해 배경색(`bg-[#F5F5F7]`)을 기본 적용하고, 선택된 항목은 스카이블루톤(`bg-[#EBF5FF]`)으로 강조하여 직관성을 높임. 그림자 효과는 배제하여 깔끔한 플랫 디자인 유지.
 
 ## 5. UI Consistency Standards (in index.css)
 - **.theme-card**: `bg-white rounded-[2rem] border border-[#E5E5E7] shadow-sm`

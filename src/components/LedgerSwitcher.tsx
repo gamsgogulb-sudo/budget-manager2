@@ -97,8 +97,8 @@ export default function LedgerSwitcher() {
                     className={cn(
                       "w-full flex items-center justify-between h-14 px-5 rounded-[1.25rem] transition-all text-left border-2",
                       currentLedger?.id === ledger.id 
-                        ? "bg-[#F5F5F7] border-[#007AFF] shadow-sm" 
-                        : "bg-white border-transparent hover:bg-[#F5F5F7]"
+                        ? "bg-[#EBF5FF] border-[#EBF5FF]" 
+                        : "bg-[#F5F5F7] border-transparent hover:bg-[#EEEEF0]"
                     )}
                   >
                     <div className="flex items-center gap-4 min-w-0">

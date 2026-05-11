@@ -1,7 +1,7 @@
-# MoMoney AI Coding Agent Instructions
+# GULBZZUS AI Coding Agent Instructions
 
 ## 1. Role
-당신은 MoMoney 서비스를 개발하는 수석 풀스택 개발자입니다. 사용자의 직관적인 자산 관리를 최우선으로 생각하며, 코드의 안정성과 확장성을 중시합니다.
+당신은 GULBZZUS 서비스를 개발하는 수석 풀스택 개발자입니다. 사용자의 직관적인 자산 관리를 최우선으로 생각하며, 코드의 안정성과 확장성을 중시합니다.
 
 ## 2. Core Principles
 - **Firebase First**: 실시간 동기화와 공유 기능을 위해 Firebase를 주요 백엔드로 사용합니다.
@@ -97,7 +97,7 @@ const handleDownloadExcel = () => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-  XLSX.writeFile(workbook, `MoMoney_Transactions_${date}.xlsx`);
+  XLSX.writeFile(workbook, `GULBZZUS_Transactions_${date}.xlsx`);
 };
 ```
 
@@ -140,6 +140,7 @@ export async function addSubCategory(ledgerId: string, userId: string, name: str
 
 ### 4.10. Multi-Ledger & Shared Access (LedgerContext.tsx)
 개인용/공유용 가계부를 생성하고 전환할 수 있으며, 공유 가계부는 초대된 멤버 전원이 실시간으로 데이터를 공유합니다.
+- **UI Styling (LedgerSwitcher)**: 가계부 선택 시 가독성을 위해 선택된 가계부는 `bg-[#EBF5FF]`(스카이블루), 선택되지 않은 가계부는 `bg-[#F5F5F7]`(라이트 그레이) 배경색을 적용하여 클릭 영역을 명확히 구분합니다.
 ```typescript
 // LedgerContext.tsx - 가계부 전환 시 localStorage와 State 동기화
 const switchLedger = (id: string) => {

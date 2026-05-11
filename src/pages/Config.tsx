@@ -301,7 +301,7 @@ export default function Config() {
       </AnimatePresence>
 
       <div className="pt-12 text-center">
-        <p className="text-[10px] font-bold text-[#86868B] uppercase tracking-[0.4em]">Designed by MoMoney Team</p>
+        <p className="text-[10px] font-bold text-[#86868B] uppercase tracking-[0.4em]">Designed by GULBZZUS Team</p>
       </div>
     </div>
   );

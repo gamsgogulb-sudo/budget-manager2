@@ -203,7 +203,7 @@ export default function Transactions() {
     wscols[11] = { wch: 20 }; // 고유ID
     worksheet['!cols'] = wscols;
 
-    XLSX.writeFile(workbook, `MoMoney_Transactions_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(workbook, `GULBZZUS_Transactions_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   const handleDelete = async (id: string) => {

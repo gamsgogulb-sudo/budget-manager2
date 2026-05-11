@@ -21,7 +21,7 @@ function AppRoutes() {
             <div className="absolute inset-0 border-4 border-[#007AFF] border-t-transparent rounded-full animate-spin"></div>
           </div>
           <div className="space-y-1 text-center">
-            <h2 className="text-sm font-bold text-[#1D1D1F]">MoMoney</h2>
+            <h2 className="text-sm font-bold text-[#1D1D1F]">GULBZZUS</h2>
             <p className="text-[10px] text-[#86868B] font-bold uppercase tracking-[0.2em]">Authenticating</p>
           </div>
         </div>
