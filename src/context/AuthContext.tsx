@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  isAuthenticating: boolean;
   accessToken: string | null;
   signIn: () => Promise<void>;
   logout: () => Promise<void>;
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(sessionStorage.getItem('google_access_token'));
   const [loading, setLoading] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -54,6 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async () => {
+    if (isAuthenticating) return;
+    setIsAuthenticating(true);
+
     try {
       googleProvider.setCustomParameters({ prompt: 'consent' });
       const result = await signInWithPopup(auth, googleProvider);
@@ -62,8 +67,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAccessToken(credential.accessToken);
         sessionStorage.setItem('google_access_token', credential.accessToken);
       }
-    } catch (error) {
-      console.error('Login failed', error);
+    } catch (error: any) {
+      if (error.code === 'auth/cancelled-popup-request') {
+        console.warn('Login request was cancelled due to a newer request.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        console.warn('Login popup was closed by user.');
+      } else {
+        console.error('Login failed', error);
+      }
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
@@ -77,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, accessToken, signIn, logout, clearAccessToken }}>
+    <AuthContext.Provider value={{ user, profile, loading, isAuthenticating, accessToken, signIn, logout, clearAccessToken }}>
       {children}
     </AuthContext.Provider>
   );

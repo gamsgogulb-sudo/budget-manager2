@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOut, User, Users, Edit2, Check, X, Trash2, CreditCard, Plus } from 'lucide-react';
+import { LogOut, User, Edit2, Check, X, Trash2, CreditCard, Plus, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLedgers } from '../context/LedgerContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,12 +7,12 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function Config() {
   const { logout, user } = useAuth();
-  const { currentLedger, updateLedger, deleteLedger, ledgers, createLedger } = useLedgers();
+  const { currentLedger, updateLedger, deleteLedger, ledgers, createLedger, switchLedger } = useLedgers();
   const navigate = useNavigate();
 
-  const [isEditingLedger, setIsEditingLedger] = useState(false);
-  const [ledgerName, setLedgerName] = useState(currentLedger?.name || '');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingLedgerId, setEditingLedgerId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [ledgerToDelete, setLedgerToDelete] = useState<typeof currentLedger | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newLedgerName, setNewLedgerName] = useState('');
 
@@ -21,18 +21,30 @@ export default function Config() {
     navigate('/');
   };
 
-  const handleUpdateLedger = async () => {
-    if (!currentLedger || !ledgerName) return;
-    await updateLedger(currentLedger.id, { name: ledgerName });
-    setIsEditingLedger(false);
+  const handleUpdateLedger = async (id: string) => {
+    if (!editingName.trim()) return;
+    await updateLedger(id, { name: editingName.trim() });
+    setEditingLedgerId(null);
+  };
+
+  const startEditing = (ledger: any) => {
+    setEditingLedgerId(ledger.id);
+    setEditingName(ledger.name);
   };
 
   const confirmDelete = async () => {
-    if (!currentLedger) return;
+    if (!ledgerToDelete) return;
+    if (ledgers.length <= 1) {
+      alert('최소 하나 이상의 가계부가 필요합니다. 마지막 가계부는 삭제할 수 없습니다.');
+      setLedgerToDelete(null);
+      return;
+    }
     try {
-      await deleteLedger(currentLedger.id);
-      setShowDeleteConfirm(false);
-      navigate('/dashboard');
+      await deleteLedger(ledgerToDelete.id);
+      setLedgerToDelete(null);
+      if (ledgerToDelete.id === currentLedger?.id) {
+        navigate('/dashboard');
+      }
     } catch (error) {
       alert('삭제 중 오류가 발생했습니다.');
     }
@@ -54,14 +66,14 @@ export default function Config() {
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
-        {showDeleteConfirm && (
+        {ledgerToDelete && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/30 backdrop-blur-[4px]" 
-              onClick={() => setShowDeleteConfirm(false)} 
+              onClick={() => setLedgerToDelete(null)} 
             />
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
@@ -74,7 +86,7 @@ export default function Config() {
               </div>
               <h3 className="text-xl font-bold text-[#1D1D1F] text-center mb-2">가계부 삭제</h3>
               <p className="text-sm text-[#86868B] text-center mb-8 leading-relaxed font-medium">
-                정말로 <span className="font-bold text-[#1D1D1F]">'{currentLedger?.name}'</span> 가계부를 삭제하시겠습니까? 데이터는 복구할 수 없습니다.
+                정말로 <span className="font-bold text-[#1D1D1F]">'{ledgerToDelete.name}'</span> 가계부를 삭제하시겠습니까? 데이터는 복구할 수 없습니다.
               </p>
               <div className="flex flex-col gap-2">
                 <button 
@@ -84,7 +96,7 @@ export default function Config() {
                   네, 삭제하겠습니다
                 </button>
                 <button 
-                  onClick={() => setShowDeleteConfirm(false)}
+                  onClick={() => setLedgerToDelete(null)}
                   className="theme-btn-secondary w-full"
                 >
                   취소
@@ -117,67 +129,6 @@ export default function Config() {
         </div>
       </section>
 
-      {/* Current Ledger Settings */}
-      {currentLedger && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">가계부 이름 수정</h2>
-          </div>
-          
-          <div className="theme-card p-6">
-            <div>
-              {isEditingLedger ? (
-                <div className="flex flex-col gap-3">
-                  <input
-                    autoFocus
-                    type="text"
-                    value={ledgerName}
-                    onChange={(e) => setLedgerName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateLedger()}
-                    className="theme-input w-full font-bold text-[#1D1D1F]"
-                  />
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={handleUpdateLedger} 
-                      className="theme-btn-primary flex-1 bg-[#007AFF]"
-                    >
-                      <Check className="w-4 h-4" />
-                      저장
-                    </button>
-                    <button 
-                      onClick={() => setIsEditingLedger(false)} 
-                      className="theme-btn-secondary flex-1"
-                    >
-                      취소
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-[#F5F5F7] rounded-xl flex items-center justify-center text-[#007AFF]">
-                       <CreditCard className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h4 
-                        onClick={() => setIsEditingLedger(true)}
-                        className="text-lg font-bold text-[#1D1D1F] cursor-pointer hover:text-[#007AFF] transition-colors"
-                      >
-                        {currentLedger.name}
-                      </h4>
-                      <p className="text-[9px] font-bold text-[#86868B] uppercase tracking-widest mt-0.5">Active Ledger</p>
-                    </div>
-                  </div>
-                  <button onClick={() => setIsEditingLedger(true)} className="p-2 text-gray-300 hover:text-[#007AFF] transition-all">
-                    <Edit2 className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Ledger Management List */}
       <section className="space-y-4">
         <div className="flex items-center justify-between px-1">
@@ -191,48 +142,90 @@ export default function Config() {
         </div>
         
         <div className="space-y-2">
-          {ledgers.map(ledger => (
-            <div key={ledger.id} className="theme-card p-4 flex items-center justify-between group hover:border-[#007AFF]/30 transition-all">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#F5F5F7] rounded-xl flex items-center justify-center text-[#86868B]">
-                   <CreditCard className="w-5 h-5" />
-                </div>
-                <span className="font-semibold text-[#1D1D1F] text-sm">{ledger.name}</span>
+          {ledgers.map(ledger => {
+            const isCurrent = currentLedger?.id === ledger.id;
+            const isEditing = editingLedgerId === ledger.id;
+
+            return (
+              <div key={ledger.id} className={`theme-card p-4 transition-all ${isCurrent ? 'border-[#007AFF]/30 bg-[#EBF5FF]/20' : 'hover:border-[#007AFF]/30'}`}>
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      autoFocus
+                      type="text"
+                      className="theme-input p-2 flex-1 font-bold text-sm"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleUpdateLedger(ledger.id);
+                        if (e.key === 'Escape') setEditingLedgerId(null);
+                      }}
+                    />
+                    <div className="flex gap-1">
+                      <button 
+                        onClick={() => handleUpdateLedger(ledger.id)}
+                        className="p-2 bg-[#007AFF] text-white rounded-xl shadow-sm"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setEditingLedgerId(null)}
+                        className="p-2 bg-white text-[#86868B] border border-gray-100 rounded-xl"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isCurrent ? 'bg-[#007AFF] text-white' : 'bg-[#F5F5F7] text-[#86868B]'}`}>
+                         <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className={`font-semibold text-sm ${isCurrent ? 'text-[#007AFF]' : 'text-[#1D1D1F]'}`}>{ledger.name}</span>
+                        {isCurrent && <p className="text-[10px] font-bold text-[#007AFF] opacity-70">현재 가계부</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                       {isCurrent ? (
+                         <button 
+                            onClick={() => startEditing(ledger)}
+                            className="p-2 text-[#86868B] hover:bg-[#1D1D1F]/5 rounded-xl transition-all"
+                            title="이름 수정"
+                         >
+                            <Edit2 className="w-4 h-4" />
+                         </button>
+                       ) : (
+                         <button 
+                            onClick={() => {
+                              switchLedger(ledger.id);
+                              navigate('/dashboard');
+                            }}
+                            className="p-2 text-[#86868B] hover:bg-[#1D1D1F]/5 rounded-xl transition-all"
+                            title="가계부로 이동"
+                         >
+                            <ExternalLink className="w-4 h-4" />
+                         </button>
+                       )}
+                       {(ledger.ownerId === user?.uid || ledger.ownerEmail === user?.email) && (
+                          <button 
+                            onClick={() => setLedgerToDelete(ledger)}
+                            disabled={ledgers.length <= 1}
+                            className={`p-2 transition-all rounded-xl ${ledgers.length <= 1 ? 'text-[#86868B]/30 cursor-not-allowed' : 'text-[#FF3B30] hover:bg-red-50'}`}
+                            title={ledgers.length <= 1 ? "최소 한 개의 가계부가 필요합니다" : "가계부 삭제"}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                       )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                 {ledger.ownerId === user?.uid && ledgers.length > 1 && (
-                    <button 
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="p-2 text-[#FF3B30] hover:bg-red-50 rounded-xl transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                 )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
-
-      {/* Danger Zone */}
-      {currentLedger && currentLedger.ownerId === user?.uid && ledgers.length > 1 && (
-        <section className="space-y-4">
-          <h2 className="text-[11px] font-bold text-[#FF3B30] uppercase tracking-[0.15em] px-1">DANGER ZONE</h2>
-          <div className="bg-[#FF3B30]/5 rounded-[2rem] border border-[#FF3B30]/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-bold text-[#1D1D1F]">가계부 삭제</h3>
-              <p className="text-xs text-[#86868B] font-medium mt-1">삭제된 가계부는 복구할 수 없습니다. 모든 거래 내역이 삭제됩니다.</p>
-            </div>
-            <button 
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full sm:w-auto theme-btn-primary bg-[#FF3B30] hover:bg-[#FF453A]"
-            >
-              <Trash2 className="w-4 h-4" />
-              가계부 삭제하기
-            </button>
-          </div>
-        </section>
-      )}
 
       {/* Create Ledger Modal */}
       <AnimatePresence>

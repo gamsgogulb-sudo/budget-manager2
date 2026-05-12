@@ -39,65 +39,106 @@ export interface Transaction {
 }
 ```
 
-### 4.2. Balance Calculation Logic (Dashboard.tsx)
-가장 최근의 `balance_adj`를 기점으로 이후의 트랜잭션을 합산하여 실시간 잔액을 계산합니다.
+### 4.2. Unified Date & Period Selection
+Dashboard와 Transactions(내역) 페이지 간의 UI 일관성을 위해 공통 컴포넌트를 사용합니다.
+- `PeriodSelector`: 프리셋(7일, 이번달 등) 및 직접 기간 설정(Custom)을 처리합니다.
+- `DateNavHeader`: 월간/주간 전환, 월 이동(prev/next), 가로형 날짜 그리드(Scroller)를 통합 제공합니다.
+  - `showViewToggle`: Dashboard 등에서 월간/주간 전환 버튼을 숨기고 싶을 때 `false`로 설정합니다.
+  - `showCalendar`: Dashboard 등에서 날짜 그리드(달력)를 숨기고 네비게이션만 쓰고 싶을 때 `false`로 설정합니다.
+  - **동기화**: `onViewDateChange`를 통해 헤더의 navigation(화살표)과 페이지의 데이터 필터링 기간을 동기화합니다.
+- `getRangeFromPeriod`: 선택된 PeriodType에 따른 실제 `start/end` 날짜 객체를 반환하는 유틸리티입니다.
+
 ```typescript
-// 계좌별 잔액 계산 로직 핵심
-const lastAdj = accTransactions
-  .filter(t => t.type === 'balance_adj')
-  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-
-let currentBal = lastAdj ? lastAdj.amount : 0;
-let startDate = lastAdj ? new Date(lastAdj.date) : new Date(0);
-
-accTransactions.forEach(t => {
-  if (new Date(t.date) <= startDate && lastAdj && t.id !== lastAdj.id) return;
-  // Income(+), Expense(-), Transfer(Out: -, In: +) 처리
-});
+// Dashboard & Transactions 공통 사용 패턴
+<DateNavHeader 
+  currentViewDate={currentViewDate}
+  onViewDateChange={setCurrentViewDate}
+  isMonthlyView={isMonthlyView}
+  selectedDate={selectedDate}
+  onSelectedDateChange={handleDateClick}
+  dateRange={currentRange}
+  onPeriodClick={() => setIsOpen(true)}
+/>
 ```
 
-### 4.3. Transaction Filtering & Search (Transactions.tsx)
-다중 필터링 조건을 결합하여 클라이언트 측에서 처리합니다.
+### 4.3. Balance Calculation & Dashboard Metrics
+가장 최근의 `balance_adj`를 기점으로 이후의 트랜잭션을 합산하여 계좌별 실시간 잔액을 계산하며, Dashboard에서는 기간별(7일/30일/이번달/지난달/직접 설정) 지출/수입 추이를 AreaChart로 시각화합니다.
 ```typescript
-const filteredTransactions = transactions.filter(t => {
-  const tDate = parseISO(t.date);
-  const matchesDate = dateRange 
-    ? isWithinInterval(tDate, { start: dateRange.start, end: dateRange.end })
-    : isSameDay(tDate, selectedDate);
-  const matchesSearch = searchTerm === '' || 
-    `${t.memo} ${t.subCategory} ${t.paymentMethod}`.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesType = filters.types.length === 0 || filters.types.includes(t.type);
-  return matchesDate && matchesSearch && matchesType;
-});
+// 직접 설정(Custom) 기간 처리
+const dateRange = useMemo(() => {
+  if (period === 'custom') {
+    return { 
+      start: startOfDay(parseISO(customRange.start)), 
+      end: endOfDay(parseISO(customRange.end)) 
+    };
+  }
+  // ... 프리셋 처리
+}, [period, customRange]);
+
+// 계좌별 실시간 잔액 계산 (전체 내역 기반)
+const accountStates = useMemo(() => {
+  const balances: Record<string, number> = {};
+  // ... 모든 계좌 순회 및 lastAdj 이후 합산 로직
+  return balances;
+}, [transactions]);
+```
+
+### 4.3. Transaction Filtering & Search
+다중 필터링 조건을 결합하여 클라이언트 측에서 처리하며, Dashboard와 Transactions 페이지에서 각각 용도에 맞는 필터를 제공합니다.
+다중 필터링 조건을 결합하여 클라이언트 측에서 처리하며, `dateRange` 유무에 따라 조기 필터링 로직이 분기됩니다.
+```typescript
+const filteredTransactions = useMemo(() => {
+  return transactions.filter(t => {
+    const tDate = parseISO(t.date);
+    // Date Matching: 기간 설정이 있으면 범위 내, 없으면 선택된 날짜와 일치 여부 확인
+    const matchesDate = dateRange 
+      ? isWithinInterval(tDate, { start: dateRange.start, end: dateRange.end })
+      : isSameDay(tDate, selectedDate);
+    const searchStr = `${t.memo} ${t.subCategory || ''} ${t.paymentMethod}`.toLowerCase();
+    const matchesSearch = searchTerm === '' || searchStr.includes(searchTerm.toLowerCase());
+    const matchesType = filters.types.length === 0 || filters.types.includes(t.type);
+    const matchesStatus = filters.settlementStatuses.length === 0 || filters.settlementStatuses.includes(t.settlementStatus || 'N/A');
+    return matchesDate && matchesSearch && matchesType && matchesStatus;
+  });
+}, [transactions, searchTerm, filters, selectedDate, dateRange]);
 ```
 
 ### 4.4. Google Drive Integration (googleDriveService.ts)
-사용자의 구글 드라이브에 전용 폴더를 생성하고 영수증 이미지를 업로드/다운로드합니다.
+사용자의 구글 드라이브에 전용 폴더를 생성하고 영수증 이미지를 업로드/다운로드합니다. 파일 조회 시 Private 링크 대신 API를 통해 Blob으로 다운로드하여 `URL.createObjectURL`로 브라우저에 표시합니다.
 ```typescript
-// 파일 조회 시 Private 링크 대신 API를 통해 Blob으로 다운로드하여 URL 생성
 export async function downloadDriveFile(accessToken: string, fileId: string): Promise<Blob> {
   const response = await fetch(`${DRIVE_API_URL}/${fileId}?alt=media`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   return await response.blob();
 }
-// UI에서는 URL.createObjectURL(blob)을 사용
 ```
 
 ### 4.5. Excel Export (Transactions.tsx)
-`xlsx` 라이브러리를 사용하여 한글 필드명과 컬럼 너비가 지정된 엑셀 파일을 생성합니다.
+`xlsx` 라이브러리를 사용하여 모든 필드를 포함한 엑셀 파일을 생성하며, 컬럼 너비를 데이터 특성에 맞게 조정합니다.
 ```typescript
 const handleDownloadExcel = () => {
   const data = transactions.map(t => ({
-    '일자': formatDate(t.date),
-    '금액': t.amount,
-    '내용': t.memo,
-    // ... 기타 필드
+    '입력시간': formatDate(t.createdAt || t.date),
+    '카테고리': t.category,
+    '세부 카테고리': t.subCategory || '',
+    '비용': t.amount,
+    '통장/카드': t.paymentMethod,
+    '세부정보': t.memo,
+    '실행일': formatDate(t.date),
+    '정산 상태': t.settlementStatus || '',
+    '🐴🐭': t.marker ? 'O' : 'X',
+    '업로드 사진 링크': [t.photoUrl || '', ...(t.photoUrls || [])].filter(Boolean).join(', '),
+    '고유ID': t.id,
+    '이동ID': t.transferId || '',
+    '정산한통장': t.settledFromAccount || '',
+    '정산받은통장': t.settledToAccount || '',
   }));
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-  XLSX.writeFile(workbook, `GULBZZUS_Transactions_${date}.xlsx`);
+  worksheet['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 30 }]; // 주요 컬럼 너비 지정
+  XLSX.writeFile(workbook, `GULBZZUS_Transactions_${new Date().toISOString().split('T')[0]}.xlsx`);
 };
 ```
 
@@ -243,3 +284,12 @@ useEffect(() => {
   )}
 </AnimatePresence>
 ```
+
+### 4.18. Ledger Management & Deletion Safety (Config.tsx)
+가계부 목록에서 각 항목별로 즉시 이름 수정, 전환(Landing), 삭제가 가능합니다. 우발적 삭제를 방지하고 최소한의 데이터 가용성을 보장하기 위한 로직이 포함되어 있습니다.
+- **Inline Editing**: 리스트 아이템 내부에서 `editingLedgerId`를 통해 즉시 이름을 변경할 수 있습니다.
+- **Landing Action**: `ExternalLink` 아이콘을 통해 선택된 가계부로 즉시 전환하고 대시보드로 이동합니다.
+- **Deletion Safety**: 
+  - 가계부 삭제 시 컨펌 모달을 통해 재확인합니다.
+  - 사용자는 자신이 소유자(`ownerId` 또는 `ownerEmail` 일치)인 가계부만 삭제할 수 있습니다.
+  - **최소 가계부 유지**: 사용자가 최소 1개의 가계부(Home)를 유지해야 하므로, 마지막 가계부의 휴지통 아이콘은 비활성화(`opacity-30`, `cursor-not-allowed`) 및 `disabled` 처리됩니다.

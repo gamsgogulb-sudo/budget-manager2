@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { Wallet } from 'lucide-react';
 
 export default function Landing() {
-  const { signIn } = useAuth();
+  const { signIn, isAuthenticating } = useAuth();
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -98,12 +98,15 @@ export default function Landing() {
           {/* Google Login Button - Reduced width and balanced style */}
           <button
             onClick={signIn}
-            className="w-[85%] bg-white/40 backdrop-blur-md text-[#1D1D1F] border border-white/60 rounded-[1.5rem] h-16 font-semibold flex items-center justify-center gap-4 hover:bg-white/60 hover:border-white transition-all active:scale-[0.98] shadow-[0_4px_24px_rgba(0,0,0,0.06)] group"
+            disabled={isAuthenticating}
+            className={`w-[85%] bg-white/40 backdrop-blur-md text-[#1D1D1F] border border-white/60 rounded-[1.5rem] h-16 font-semibold flex items-center justify-center gap-4 hover:bg-white/60 hover:border-white transition-all active:scale-[0.98] shadow-[0_4px_24px_rgba(0,0,0,0.06)] group ${isAuthenticating ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:scale-110 transition-transform">
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
             </div>
-            <span className="text-[15px] tracking-tight">Google 로 로그인</span>
+            <span className="text-[15px] tracking-tight">
+              {isAuthenticating ? '로그인 처리 중...' : 'Google 로 로그인'}
+            </span>
           </button>
         </motion.div>
       </div>

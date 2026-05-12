@@ -80,7 +80,7 @@ export default function Layout() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto pb-24 lg:pb-12">
+        <div className="flex-1 overflow-y-auto pb-28 lg:pb-20">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -219,22 +219,35 @@ export default function Layout() {
           )}
         </AnimatePresence>
 
-        {/* Bottom Navigation (Glassmorphism) */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-3xl border-t border-gray-200 z-[40]">
-          <div className="max-w-xl mx-auto h-20 flex items-center justify-around px-4 pb-2 pt-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) => cn(
-                  "flex flex-col items-center gap-1 p-2 transition-all rounded-2xl min-w-[72px]",
-                  isActive ? "text-[#007AFF]" : "text-[#86868B] hover:text-[#1D1D1F]"
-                )}
-              >
-                <item.icon className={cn("w-6 h-6 transition-transform sm:w-5 sm:h-5", "active:scale-90")} />
-                <span className="text-[10px] font-medium tracking-tight font-sans">{item.label}</span>
-              </NavLink>
-            ))}
+        {/* Floating Navigation Bar */}
+        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-[40]">
+          <div className="bg-white/70 backdrop-blur-2xl border border-white/40 ring-1 ring-black/[0.05] shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-[2.5rem] px-4 py-2">
+            <div className="flex items-center justify-around h-14">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => cn(
+                    "relative flex flex-col items-center gap-1 p-2 transition-all rounded-2xl min-w-[64px]",
+                    isActive ? "text-[#007AFF]" : "text-[#86868B] hover:text-[#1D1D1F]"
+                  )}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.div 
+                          layoutId="nav-glow"
+                          className="absolute inset-0 bg-blue-50/50 rounded-2xl -z-10"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                      <item.icon className={cn("w-5 h-5 transition-transform", "active:scale-90")} />
+                      <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
           </div>
         </nav>
       </main>

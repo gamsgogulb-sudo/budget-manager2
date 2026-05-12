@@ -12,6 +12,7 @@ import {
 import * as XLSX from 'xlsx';
 import TransactionModal from '../components/TransactionModal';
 import { motion, AnimatePresence } from 'motion/react';
+import PeriodSelector, { getRangeFromPeriod, PeriodType } from '../components/PeriodSelector';
 import { 
   startOfWeek, 
   addDays, 
@@ -34,6 +35,8 @@ interface FilterState {
   types: string[];
   settlementStatuses: string[];
 }
+
+import DateNavHeader from '../components/DateNavHeader';
 
 export default function Transactions() {
   const { user } = useAuth();
@@ -58,35 +61,41 @@ export default function Transactions() {
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null);
   const [currentViewDate, setCurrentViewDate] = useState(today);
-  const [viewMonth, setViewMonth] = useState(today); // Kept for month-specific view logic if needed, but will sync with currentViewDate
 
-  // Generate date grids
-  const weekDays = useMemo(() => {
-    const weekStart = startOfWeek(currentViewDate, { weekStartsOn: 0 });
-    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  }, [currentViewDate]);
-  
-  const monthDays = useMemo(() => {
-    const start = startOfMonth(currentViewDate);
-    const end = endOfMonth(currentViewDate);
-    const calStart = startOfWeek(start, { weekStartsOn: 0 });
-    const calEnd = endOfWeek(end, { weekStartsOn: 0 });
-    return eachDayOfInterval({ start: calStart, end: calEnd });
-  }, [currentViewDate]);
+  // Period Selector Support
+  const [period, setPeriod] = useState<PeriodType>('today');
+  const [customRange, setCustomRange] = useState<{ start: string; end: string }>({
+    start: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+    end: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
+  });
 
-  const handlePrev = () => {
-    if (isMonthlyView) {
-      setCurrentViewDate(prev => subMonths(prev, 1));
-    } else {
-      setCurrentViewDate(prev => addDays(prev, -7));
-    }
+  const handleSelectedDateChange = (day: Date) => {
+    setSelectedDate(day);
+    setDateRange(null);
+    setPeriod('today');
   };
 
-  const handleNext = () => {
+  const handleViewDateChange = (newDate: Date) => {
+    setCurrentViewDate(newDate);
     if (isMonthlyView) {
-      setCurrentViewDate(prev => addMonths(prev, 1));
+      setPeriod('custom');
+      const start = startOfMonth(newDate);
+      const end = endOfMonth(newDate);
+      setCustomRange({
+        start: format(start, 'yyyy-MM-dd'),
+        end: format(end, 'yyyy-MM-dd'),
+      });
+      setDateRange({ start, end });
     } else {
-      setCurrentViewDate(prev => addDays(prev, 7));
+      // Weekly view sync
+      setPeriod('custom');
+      const start = startOfWeek(newDate, { weekStartsOn: 0 });
+      const end = endOfWeek(newDate, { weekStartsOn: 0 });
+      setCustomRange({
+        start: format(start, 'yyyy-MM-dd'),
+        end: format(end, 'yyyy-MM-dd'),
+      });
+      setDateRange({ start, end });
     }
   };
 
@@ -220,128 +229,17 @@ export default function Transactions() {
 
   return (
     <div className="relative min-h-[calc(100vh-120px)] pb-24">
-      {/* Horizontal Calendar Section */}
-      <div className="mb-10 px-1">
-        {/* Month Navigator Row */}
-        <div className="flex items-center justify-between py-2 mb-6">
-          <h1 className="text-2xl font-bold text-[#1D1D1F]">
-            {format(currentViewDate, 'yyyy년 M월', { locale: ko })}
-          </h1>
-          <div className="flex items-center gap-1 bg-[#F2F2F7] p-1 rounded-xl">
-            <button 
-              onClick={handlePrev}
-              className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-[#1D1D1F]"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={handleNext}
-              className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-[#1D1D1F]"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* View Selection & Period Sync Controls */}
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-1 bg-[#F2F2F7] p-1 rounded-2xl">
-            <button 
-              onClick={() => setIsMonthlyView(true)}
-              className={cn(
-                "px-6 py-2.5 rounded-[1rem] text-xs font-semibold transition-all",
-                isMonthlyView ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
-              )}
-            >
-              월간
-            </button>
-            <button 
-              onClick={() => setIsMonthlyView(false)}
-              className={cn(
-                "px-6 py-2.5 rounded-[1rem] text-xs font-semibold transition-all",
-                !isMonthlyView ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
-              )}
-            >
-              주간
-            </button>
-          </div>
-          <button 
-            onClick={() => setActiveFilterType('custom')}
-            className={cn(
-              "theme-btn-secondary px-5 h-12 text-xs",
-              dateRange && "bg-[#007AFF] text-white"
-            )}
-          >
-            <CalendarIcon className="w-4 h-4" />
-            <span>기간 설정</span>
-          </button>
-        </div>
-
-        <motion.div 
-          animate={{ height: 'auto' }}
-          className="pb-4"
-        >
-          <div className="grid grid-cols-7 gap-1">
-            {['일', '월', '화', '수', '목', '금', '토'].map(d => (
-              <div key={d} className="text-center text-[11px] font-semibold text-[#86868B] py-2">{d}</div>
-            ))}
-            {(isMonthlyView ? monthDays : weekDays).map((day, idx) => {
-              const dateKey = format(day, 'yyyy-MM-dd');
-              const summary = dailySummaries[dateKey];
-              const isSel = isSameDay(day, selectedDate) && !dateRange;
-              const isTod = isToday(day);
-              const isOtherMonth = isMonthlyView && day.getMonth() !== viewMonth.getMonth();
-              
-              const isInRange = dateRange && isWithinInterval(day, { start: dateRange.start, end: dateRange.end });
-              const isRangeStart = dateRange && isSameDay(day, dateRange.start);
-              const isRangeEnd = dateRange && isSameDay(day, dateRange.end);
-
-              const formatVal = (val: number) => {
-                if (val >= 10000) return `${(val / 10000).toFixed(0)}만`;
-                if (val >= 1000) return `${(val / 1000).toFixed(0)}천`;
-                return val.toLocaleString();
-              };
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setSelectedDate(day);
-                    setDateRange(null);
-                  }}
-                  className={cn(
-                    "flex flex-col items-center justify-between py-2 rounded-2xl transition-all aspect-[4/5] relative",
-                    isOtherMonth ? "opacity-20 pointer-events-none" : "hover:bg-[#F2F2F7]",
-                    isSel 
-                      ? "bg-[#1D1D1F] text-white shadow-xl z-20 scale-105" 
-                      : isInRange
-                        ? "bg-[#007AFF]/10 text-[#1D1D1F] z-0"
-                        : "bg-transparent text-[#1D1D1F]",
-                    isRangeStart && "rounded-l-2xl bg-[#007AFF] text-white z-10",
-                    isRangeEnd && "rounded-r-2xl bg-[#007AFF] text-white z-10",
-                    isInRange && !isRangeStart && !isRangeEnd && "rounded-none",
-                    isTod && !isSel && !isRangeStart && !isRangeEnd && "text-[#007AFF] font-bold"
-                  )}
-                >
-                  <span className="text-sm font-semibold">{format(day, 'd')}</span>
-                  <div className="w-full text-[8px] font-bold space-y-0.5 mt-1 overflow-hidden z-10 px-1">
-                    {summary?.income > 0 && (
-                      <div className={cn("truncate text-[#34C759]", (isSel || isRangeStart || isRangeEnd) ? "text-white/80" : "")}>
-                        {formatVal(summary.income)}
-                      </div>
-                    )}
-                    {summary?.expense > 0 && (
-                      <div className={cn("truncate text-[#FF3B30]", (isSel || isRangeStart || isRangeEnd) ? "text-white/80" : "")}>
-                        {formatVal(summary.expense)}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-      </div>
+      <DateNavHeader 
+        currentViewDate={currentViewDate}
+        onViewDateChange={handleViewDateChange}
+        isMonthlyView={isMonthlyView}
+        setIsMonthlyView={setIsMonthlyView}
+        selectedDate={selectedDate}
+        onSelectedDateChange={handleSelectedDateChange}
+        dateRange={dateRange}
+        onPeriodClick={() => setActiveFilterType('custom')}
+        dailySummaries={dailySummaries}
+      />
 
       {/* Control Tools Section */}
       <div className="mb-8 space-y-4">
@@ -606,56 +504,31 @@ export default function Transactions() {
 
               <div className="flex-1 overflow-y-auto p-6 sm:p-8">
                 {activeFilterType === 'custom' ? (
-                  <div className="space-y-8">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-[#86868B] ml-1">시작일</label>
-                        <input 
-                          type="date" 
-                          style={{ maxWidth: '100%' }}
-                          value={dateRange?.start ? format(dateRange.start, 'yyyy-MM-dd') : ''}
-                          className="theme-input w-full appearance-none"
-                          onChange={(e) => {
-                            const date = e.target.value ? new Date(e.target.value) : today;
-                            setDateRange(prev => ({ start: date, end: prev?.end || today }));
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-[#86868B] ml-1">종료일</label>
-                        <input 
-                          type="date" 
-                          style={{ maxWidth: '100%' }}
-                          value={dateRange?.end ? format(dateRange.end, 'yyyy-MM-dd') : ''}
-                          className="theme-input w-full appearance-none"
-                          onChange={(e) => {
-                            const date = e.target.value ? new Date(e.target.value) : today;
-                            setDateRange(prev => ({ start: prev?.start || today, end: date }));
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <p className="text-xs font-semibold text-[#86868B] ml-1 uppercase tracking-wider">주요 기간 선택</p>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {[
-                          { label: '전체 (오늘)', onClick: () => { setDateRange(null); setSelectedDate(today); } },
-                          { label: '이번 분기', onClick: () => setDateRange({ start: startOfQuarter(today), end: today }) },
-                          { label: '이번 달', onClick: () => setDateRange({ start: startOfMonth(today), end: today }) },
-                          { label: '이번 주', onClick: () => setDateRange({ start: startOfWeek(today, { weekStartsOn: 0 }), end: today }) }
-                        ].map((btn, i) => (
-                          <button 
-                            key={i}
-                            onClick={() => { btn.onClick(); setActiveFilterType(null); }}
-                            className="theme-btn-secondary w-full text-xs font-semibold"
-                          >
-                            {btn.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  <PeriodSelector 
+                    period={period}
+                    onChangePeriod={(p) => {
+                      setPeriod(p);
+                      const range = getRangeFromPeriod(p, {
+                        start: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+                        end: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
+                      });
+                      if (p === 'today') {
+                        setDateRange(null);
+                        setSelectedDate(new Date());
+                      } else {
+                        setDateRange(range);
+                      }
+                      if (p !== 'custom') {
+                        setActiveFilterType(null);
+                      }
+                    }}
+                    customRange={customRange}
+                    onChangeCustomRange={(range) => {
+                      setCustomRange(range);
+                      setDateRange(getRangeFromPeriod('custom', range));
+                    }}
+                    variant="sheet"
+                  />
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {activeFilterType === 'type' ? (
