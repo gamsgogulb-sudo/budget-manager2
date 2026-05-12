@@ -24,6 +24,7 @@ export interface Ledger {
   ownerEmail?: string;
   members: string[];
   memberEmails: string[];
+  canMemberShare: boolean;
   createdAt: any;
 }
 
@@ -103,6 +104,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       ownerEmail: user.email,
       members: [user.uid],
       memberEmails: [user.email, ...inviteEmails],
+      canMemberShare: false,
       createdAt: serverTimestamp()
     };
 

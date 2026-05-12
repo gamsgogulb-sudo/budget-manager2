@@ -6,7 +6,7 @@ import { Transaction, SubCategory } from '../types';
 import { formatCurrency, formatDate, cn } from '../lib/utils';
 import { 
   Plus, Paperclip, Search, Filter, Trash2, Edit2, ArrowUpRight, ArrowDownLeft, 
-  FileDown, X, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight,
+  FileDown, X, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown,
   ArrowRightLeft, Scale, Image as ImageIcon
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -356,29 +356,33 @@ export default function Transactions() {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 px-0.5 scrollbar-none">
           <button 
+            id="filter-type-button"
             onClick={() => setActiveFilterType('type')}
             className={cn(
-              "h-10 px-5 rounded-full text-xs font-semibold transition-all whitespace-nowrap border",
+              "flex items-center gap-1.5 px-4 py-2.5 rounded-[1rem] text-xs font-semibold transition-all whitespace-nowrap border",
               filters.types.length > 0
                 ? "bg-[#007AFF] text-white border-transparent"
-                : "bg-white text-[#1D1D1F] border-gray-200 hover:border-gray-300 shadow-sm"
+                : "bg-white text-[#1D1D1F] border-[#F2F2F7] hover:border-gray-200 shadow-sm"
             )}
           >
-            거래 타입 {filters.types.length > 0 && `(${filters.types.length})`}
+            <span>거래 타입 {filters.types.length > 0 && `(${filters.types.length})`}</span>
+            <ChevronDown className={cn("w-3.5 h-3.5", filters.types.length > 0 ? "text-white/80" : "text-[#86868B]")} />
           </button>
 
           <button 
+            id="filter-status-button"
             onClick={() => setActiveFilterType('status')}
             className={cn(
-              "h-10 px-5 rounded-full text-xs font-semibold transition-all whitespace-nowrap border",
+              "flex items-center gap-1.5 px-4 py-2.5 rounded-[1rem] text-xs font-semibold transition-all whitespace-nowrap border",
               filters.settlementStatuses.length > 0
                 ? "bg-[#5856D6] text-white border-transparent"
-                : "bg-white text-[#1D1D1F] border-gray-200 hover:border-gray-300 shadow-sm"
+                : "bg-white text-[#1D1D1F] border-[#F2F2F7] hover:border-gray-200 shadow-sm"
             )}
           >
-            정산 상태 {filters.settlementStatuses.length > 0 && `(${filters.settlementStatuses.length})`}
+            <span>정산 상태 {filters.settlementStatuses.length > 0 && `(${filters.settlementStatuses.length})`}</span>
+            <ChevronDown className={cn("w-3.5 h-3.5", filters.settlementStatuses.length > 0 ? "text-white/80" : "text-[#86868B]")} />
           </button>
 
           {(filters.types.length > 0 || filters.settlementStatuses.length > 0 || searchTerm !== '') && (

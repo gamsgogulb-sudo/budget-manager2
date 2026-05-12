@@ -112,6 +112,11 @@ export default function LedgerSwitcher() {
                         <p className={cn("text-sm font-bold truncate", currentLedger?.id === ledger.id ? "text-[#007AFF]" : "text-[#1D1D1F]")}>
                           {ledger.name}
                         </p>
+                        {ledger.type === 'shared' && ledger.ownerEmail && (
+                          <p className="text-[10px] text-[#86868B] font-medium truncate mt-0.5">
+                            Owner: {ledger.ownerEmail}
+                          </p>
+                        )}
                       </div>
                     </div>
                     {currentLedger?.id === ledger.id && (

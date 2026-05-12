@@ -25,6 +25,7 @@
         "ownerEmail": { "type": "string" },
         "members": { "type": "array", "items": { "type": "string" }, "description": "List of member UIDs" },
         "memberEmails": { "type": "array", "items": { "type": "string" }, "description": "List of member emails for display/search" },
+        "canMemberShare": { "type": "boolean", "description": "Whether non-owner members can invite other users", "default": false },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "type", "ownerId", "members"]

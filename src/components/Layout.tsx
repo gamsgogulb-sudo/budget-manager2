@@ -20,7 +20,7 @@ import { cn } from '../lib/utils';
 
 export default function Layout() {
   const { user } = useAuth();
-  const { currentLedger, inviteMember, removeMember } = useLedgers();
+  const { currentLedger, inviteMember, removeMember, updateLedger } = useLedgers();
   const navigate = useNavigate();
   const location = useLocation();
   const [showShareModal, setShowShareModal] = useState(false);
@@ -68,7 +68,7 @@ export default function Layout() {
             </div>
 
             <div className="flex items-center gap-2">
-              {currentLedger && location.pathname === '/transactions' && (
+              {currentLedger && location.pathname === '/transactions' && (currentLedger.ownerId === user?.uid || currentLedger.canMemberShare) && (
                 <button 
                   onClick={() => setShowShareModal(true)}
                   className="p-2 text-gray-400 hover:text-[#007AFF] transition-colors border-none bg-transparent active:scale-95"
@@ -132,7 +132,7 @@ export default function Layout() {
                 </div>
 
                 <div className="p-6 pt-4 space-y-8">
-                  <form onSubmit={handleInvite} className="space-y-4">
+                  <form onSubmit={handleInvite} className="space-y-6">
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-[#86868B] ml-1">공유할 사용자 이메일</label>
                       <div className="relative">
@@ -147,6 +147,31 @@ export default function Layout() {
                         />
                       </div>
                     </div>
+
+                    {currentLedger.ownerId === user?.uid && (
+                      <div className="flex items-center justify-between px-1 py-1">
+                        <div>
+                          <p className="text-xs font-semibold text-[#1D1D1F]">멤버의 권한 설정</p>
+                          <p className="text-[10px] text-[#86868B] font-medium">멤버가 다른 사용자를 초대하는 것을 허용합니다.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => updateLedger(currentLedger.id, { canMemberShare: !currentLedger.canMemberShare })}
+                          className={cn(
+                            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
+                            currentLedger.canMemberShare ? "bg-[#34C759]" : "bg-gray-200"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200",
+                              currentLedger.canMemberShare ? "translate-x-6" : "translate-x-1"
+                            )}
+                          />
+                        </button>
+                      </div>
+                    )}
+
                     <button
                       type="submit"
                       className="theme-btn-primary w-full shadow-lg shadow-blue-500/20"
@@ -160,7 +185,11 @@ export default function Layout() {
                     <div className="space-y-4">
                       <h4 className="text-xs font-semibold text-[#86868B] ml-1 uppercase tracking-wider">공유된 멤버</h4>
                       <div className="space-y-2">
-                        {currentLedger.memberEmails.map((memberEmail: string) => (
+                        {[...currentLedger.memberEmails].sort((a, b) => {
+                          if (a === currentLedger.ownerEmail) return -1;
+                          if (b === currentLedger.ownerEmail) return 1;
+                          return 0;
+                        }).map((memberEmail: string) => (
                           <div key={memberEmail} className="flex items-center gap-3 p-3 bg-[#F5F5F7] rounded-2xl border border-transparent">
                             <div className="w-8 h-8 rounded-full bg-blue-50 text-[#007AFF] flex items-center justify-center">
                               <User className="w-4 h-4" />
