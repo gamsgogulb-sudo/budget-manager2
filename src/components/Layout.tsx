@@ -220,36 +220,38 @@ export default function Layout() {
         </AnimatePresence>
 
         {/* Floating Navigation Bar */}
-        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-[40]">
-          <div className="bg-white/70 backdrop-blur-2xl border border-white/40 ring-1 ring-black/[0.05] shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-[2.5rem] px-4 py-2">
-            <div className="flex items-center justify-around h-14">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) => cn(
-                    "relative flex flex-col items-center gap-1 p-2 transition-all rounded-2xl min-w-[64px]",
-                    isActive ? "text-[#007AFF]" : "text-[#86868B] hover:text-[#1D1D1F]"
-                  )}
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <motion.div 
-                          layoutId="nav-glow"
-                          className="absolute inset-0 bg-blue-50/50 rounded-2xl -z-10"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                      <item.icon className={cn("w-5 h-5 transition-transform", "active:scale-90")} />
-                      <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
-                    </>
-                  )}
-                </NavLink>
-              ))}
+        {!location.pathname.startsWith('/settings/batch') && (
+          <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-[40]">
+            <div className="bg-white/70 backdrop-blur-2xl border border-white/40 ring-1 ring-black/[0.05] shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-[2.5rem] px-4 py-2">
+              <div className="flex items-center justify-around h-14">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) => cn(
+                      "relative flex flex-col items-center gap-1 p-2 transition-all rounded-2xl min-w-[64px]",
+                      isActive ? "text-[#007AFF]" : "text-[#86868B] hover:text-[#1D1D1F]"
+                    )}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <motion.div 
+                            layoutId="nav-glow"
+                            className="absolute inset-0 bg-blue-50/50 rounded-2xl -z-10"
+                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                          />
+                        )}
+                        <item.icon className={cn("w-5 h-5 transition-transform", "active:scale-90")} />
+                        <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        )}
       </main>
     </div>
   );

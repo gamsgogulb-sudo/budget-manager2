@@ -65,6 +65,7 @@ export default function Dashboard() {
   });
   
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<{ name: string, type: 'income' | 'expense' } | null>(null);
 
   // Sync range when month changes via arrows
   const handleViewDateChange = (newDate: Date) => {
@@ -209,6 +210,21 @@ export default function Dashboard() {
         balance={accountStates[selectedAccount] || 0}
         transactions={transactions.filter(t => t.paymentMethod === selectedAccount || (t.type === 'transfer' && t.settledToAccount === selectedAccount))}
         onBack={() => setSelectedAccount(null)}
+      />
+    );
+  }
+
+  if (selectedCategory) {
+    return (
+      <CategoryDetailView 
+        categoryName={selectedCategory.name}
+        type={selectedCategory.type}
+        total={selectedCategory.type === 'expense' 
+          ? expenseCategoryData.find(c => c.name === selectedCategory.name)?.value || 0
+          : incomeCategoryData.find(c => c.name === selectedCategory.name)?.value || 0
+        }
+        transactions={periodTransactions.filter(t => t.category === selectedCategory.name && t.type === selectedCategory.type)}
+        onBack={() => setSelectedCategory(null)}
       />
     );
   }
@@ -394,12 +410,14 @@ export default function Dashboard() {
           data={expenseCategoryData} 
           total={totalExpense}
           colors={COLORS}
+          onCategoryClick={(name) => setSelectedCategory({ name, type: 'expense' })}
         />
         <CategoryCard 
           title="수입 분포" 
           data={incomeCategoryData} 
           total={totalIncome}
           colors={[...COLORS].reverse()}
+          onCategoryClick={(name) => setSelectedCategory({ name, type: 'income' })}
         />
       </div>
 
@@ -503,7 +521,9 @@ function AccountCard({ name, balance, onClick }: AccountCardProps) {
   );
 }
 
-function CategoryCard({ title, data, total, colors }: { title: string, data: any[], total: number, colors: string[] }) {
+function CategoryCard({ title, data, total, colors, onCategoryClick }: { 
+  title: string, data: any[], total: number, colors: string[], onCategoryClick?: (name: string) => void 
+}) {
   return (
     <div className="theme-card p-6">
       <h2 className="font-bold text-lg text-[#1D1D1F] mb-6">{title}</h2>
@@ -518,6 +538,8 @@ function CategoryCard({ title, data, total, colors }: { title: string, data: any
                 strokeWidth={0}
                 paddingAngle={4}
                 dataKey="value"
+                onClick={(entry) => onCategoryClick?.(String(entry.name))}
+                className="cursor-pointer"
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
@@ -536,16 +558,23 @@ function CategoryCard({ title, data, total, colors }: { title: string, data: any
         </div>
         <div className="flex-1 space-y-3 w-full">
           {data.length > 0 ? data.slice(0, 5).map((item, i) => (
-            <div key={item.name} className="flex items-center justify-between">
+            <button 
+              key={item.name} 
+              onClick={() => onCategoryClick?.(item.name)}
+              className="flex items-center justify-between w-full hover:bg-black/[0.02] p-1 rounded-lg transition-colors text-left"
+            >
               <div className="flex items-center gap-2.5">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }}></div>
                 <span className="text-xs font-semibold text-[#86868B]">{item.name}</span>
               </div>
-              <div className="text-right">
-                <span className="text-xs font-bold text-[#1D1D1F] block">{formatCurrency(item.value)}</span>
-                <span className="text-[10px] text-[#86868B] font-medium">{total > 0 ? Math.round((item.value / total) * 100) : 0}%</span>
+              <div className="text-right flex items-center gap-2">
+                <div>
+                  <span className="text-xs font-bold text-[#1D1D1F] block">{formatCurrency(item.value)}</span>
+                  <span className="text-[10px] text-[#86868B] font-medium">{total > 0 ? Math.round((item.value / total) * 100) : 0}%</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-[#C7C7CC]" />
               </div>
-            </div>
+            </button>
           )) : (
             <div className="h-full flex items-center justify-center text-[#86868B] text-xs font-medium py-10">
               데이터가 없습니다.
@@ -632,6 +661,103 @@ function AccountDetailView({ accName, balance, transactions, onBack }: {
           {sortedTs.length === 0 && (
             <div className="theme-card p-12 text-center text-[#86868B] text-sm">
               내역이 없습니다.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CategoryDetailView({ categoryName, type, total, transactions, onBack }: {
+  categoryName: string;
+  type: 'income' | 'expense';
+  total: number;
+  transactions: Transaction[];
+  onBack: () => void;
+}) {
+  const sortedTs = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return (
+    <div className="space-y-6">
+      <button 
+        onClick={onBack}
+        className="flex items-center gap-2 text-[#86868B] hover:text-[#007AFF] font-bold text-sm transition-colors mb-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        대시보드로 돌아가기
+      </button>
+
+      <div className={cn(
+        "theme-card p-8 text-white relative overflow-hidden",
+        type === 'income' ? "bg-gradient-to-br from-[#34C759] to-[#28a745]" : "bg-gradient-to-br from-[#FF3B30] to-[#d93025]"
+      )}>
+        <div className="flex justify-between items-start relative z-10">
+          <div>
+            <p className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1 italic">Category Analysis</p>
+            <h2 className="text-2xl font-bold tracking-tight mb-4">{categoryName}</h2>
+          </div>
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+            {type === 'income' ? <TrendingUp className="w-6 h-6 text-white" /> : <TrendingDown className="w-6 h-6 text-white" />}
+          </div>
+        </div>
+        <div className="pt-4 mt-4 border-t border-white/10 relative z-10">
+          <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">기간 합계</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-4xl font-bold tracking-tighter">{formatCurrency(total)}</p>
+            <span className="text-xs font-medium text-white/80">{type === 'income' ? '수입' : '지출'}</span>
+          </div>
+        </div>
+        <div className="absolute -right-10 -bottom-10 opacity-10">
+           {type === 'income' ? <TrendingUp className="w-48 h-48" /> : <TrendingDown className="w-48 h-48" />}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="font-bold text-lg text-[#1D1D1F] px-2 flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-[#007AFF]" />
+          분류별 상세 내역
+        </h3>
+        <div className="grid grid-cols-1 gap-2">
+          {sortedTs.map((t) => (
+            <div key={t.id} className="theme-card p-4 flex justify-between items-center hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                  t.type === 'income' ? "bg-[#34C759]/10 text-[#34C759]" :
+                  t.type === 'expense' ? "bg-[#FF3B30]/10 text-[#FF3B30]" :
+                  "bg-[#007AFF]/10 text-[#007AFF]"
+                )}>
+                  {t.type === 'income' ? <ArrowUpRight className="w-5 h-5" /> : 
+                   t.type === 'expense' ? <ArrowDownRight className="w-5 h-5" /> : 
+                   <RefreshCw className="w-5 h-5" />}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[#1D1D1F] leading-tight">{t.memo || t.subCategory || t.category}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] text-[#86868B] font-semibold">{format(parseISO(t.date), 'yyyy년 MM월 dd일')}</p>
+                    <span className="w-1 h-1 rounded-full bg-[#E5E5EA]"></span>
+                    <p className="text-[10px] text-[#86868B] font-bold uppercase">{t.paymentMethod}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className={cn(
+                  "text-sm font-bold tracking-tight",
+                  t.type === 'income' ? "text-[#34C759]" :
+                  t.type === 'expense' ? "text-[#FF3B30]" :
+                  "text-[#007AFF]"
+                )}>
+                  {t.type === 'expense' ? '-' : t.type === 'income' ? '+' : ''}
+                  {formatCurrency(t.amount)}
+                </p>
+                {t.subCategory && <p className="text-[10px] text-[#86868B] font-bold uppercase">{t.subCategory}</p>}
+              </div>
+            </div>
+          ))}
+          {sortedTs.length === 0 && (
+            <div className="theme-card p-12 text-center text-[#86868B] text-sm">
+              해당 분류의 내역이 없습니다.
             </div>
           )}
         </div>

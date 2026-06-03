@@ -173,7 +173,15 @@ export default function DateNavHeader({
                   onClick={() => onSelectedDateChange(day)}
                   className={cn(
                     "flex flex-col items-center justify-between py-2 rounded-2xl transition-all aspect-[4/5] relative",
-                    isOtherMonth ? "opacity-20 pointer-events-none" : "hover:bg-[#F2F2F7]",
+                    isOtherMonth 
+                      ? "opacity-20 pointer-events-none" 
+                      : isSel 
+                        ? "hover:bg-[#2C2C2E]" 
+                        : (isRangeStart || isRangeEnd)
+                          ? "hover:bg-[#0066D6]" 
+                          : isInRange
+                            ? "hover:bg-[#007AFF]/20"
+                            : "hover:bg-[#F2F2F7]",
                     isSel 
                       ? "bg-[#1D1D1F] text-white shadow-xl z-20 scale-105" 
                       : isInRange

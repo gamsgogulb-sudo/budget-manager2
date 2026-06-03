@@ -16,7 +16,11 @@ service cloud.firestore {
     }
 
     function isLedgerMember(ledgerId) {
-      return isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/ledgers/$(ledgerId)).data.members;
+      let ledger = get(/databases/$(database)/documents/ledgers/$(ledgerId)).data;
+      return isSignedIn() && (
+        ledger.members.hasAny([request.auth.uid]) || 
+        ledger.memberEmails.hasAny([request.auth.token.email])
+      );
     }
 
     function isValidId(id) {
@@ -39,8 +43,8 @@ service cloud.firestore {
     match /ledgers/{ledgerId} {
       function isMember() {
         return isSignedIn() && (
-          request.auth.uid in resource.data.members ||
-          request.auth.token.email in resource.data.memberEmails
+          resource.data.members.hasAny([request.auth.uid]) ||
+          resource.data.memberEmails.hasAny([request.auth.token.email])
         );
       }
       
@@ -57,9 +61,20 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
 
       // Sub-collections
-      match /{subCollection}/{id} {
+      match /transactions/{id} { 
+        // Optimized create for batches: if ownerId matches and user is member
+        allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid && isLedgerMember(ledgerId);
+        allow read, update, delete: if isLedgerMember(ledgerId); 
+      }
+      match /subCategories/{id} { allow read, write: if isLedgerMember(ledgerId); }
+      match /accountCards/{id} { allow read, write: if isLedgerMember(ledgerId); }
+      match /entrySets/{id} { 
         allow read, write: if isLedgerMember(ledgerId);
       }
+      match /checklists/{id} { allow read, write: if isLedgerMember(ledgerId); }
+      match /stocks/{id} { allow read, write: if isLedgerMember(ledgerId); }
+      match /subscriptions/{id} { allow read, write: if isLedgerMember(ledgerId); }
+      match /investments/{id} { allow read, write: if isLedgerMember(ledgerId); }
     }
     
     // Future: Shared groups match block

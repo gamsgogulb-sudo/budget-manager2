@@ -128,16 +128,29 @@
       },
       "required": ["symbol", "name", "quantity", "avgPrice", "ownerId"]
     },
-    "Template": {
-      "title": "Transaction Template",
-      "description": "Saved transaction for quick entry",
+    "BatchEntryItem": {
+      "title": "Batch Entry Item",
+      "description": "Item within a batch entry set",
+      "type": "object",
+      "properties": {
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "type": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "memo": { "type": "string" }
+      }
+    },
+    "BatchEntrySet": {
+      "title": "Batch Entry Set",
+      "description": "Set of transactions for batch entry",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "amount": { "type": "number" },
-        "category": { "type": "string" },
-        "type": { "type": "string" },
+        "items": { 
+          "type": "array",
+          "items": { "$ref": "BatchEntryItem" }
+        },
         "ownerId": { "type": "string" }
       },
       "required": ["name", "ownerId"]
@@ -188,9 +201,9 @@
       "schema": "Stock",
       "description": "Ledger-specific stock holdings"
     },
-    "ledgers/{ledgerId}/templates": {
-      "schema": "Template",
-      "description": "Ledger-specific transaction templates"
+    "ledgers/{ledgerId}/entrySets": {
+      "schema": "BatchEntrySet",
+      "description": "Ledger-specific batch entry sets"
     },
     "ledgers/{ledgerId}/checklists": {
       "schema": "ChecklistItem",

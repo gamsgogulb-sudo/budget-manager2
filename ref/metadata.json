@@ -1,0 +1,10 @@
+{
+  "name": "GULBZZUS Budget",
+  "description": "A sophisticated household account book app connected directly to Google Sheets via Google Login.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

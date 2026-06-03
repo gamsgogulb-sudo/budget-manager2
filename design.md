@@ -43,4 +43,9 @@
 - **Dynamic List Editor & Management**: 
     - 추가 버튼과 입력창의 높이를 일치시키고, 리스트 아이템 내부의 편집/삭제 버튼은 `w-9 h-9` 크기의 아이콘 버튼으로 표준화.
     - **Quick Actions**: 설정 내 가계부 관리 리스트와 같이 여러 액션이 필요한 경우, 특정 기능(전환, 수정)은 아이콘 버튼으로 배치하고, 삭제와 같은 위험 액션은 우측 끝에 배치하여 시각적 위계 부여.
+    - **Swipeable Cards (Apple iOS Style)**: 
+        - 리스트형 간편 가치형 카드(템플릿 카드 등)는 일반 리스트 카드와 완벽한 시각적 균형을 위해 세로 정렬 높이를 `h-[76px]`(padding `px-5`)로 고정하여 통일합니다.
+        - 아이콘 크기는 `w-10 h-10`에 둥근 모서리 `rounded-xl`, 내부 아이콘 크기는 `w-5 h-5`로 고정합니다.
+        - 스와이프 인터랙션 구현 시, 외부 컨테이너는 `.theme-card`와 일치하는 큰 라운드값 `rounded-[2rem]`과 `overflow-hidden`을 가집니다. 이를 통해 카드를 미끄러트렸을 때 내부에 숨겨진 액션 버튼들의 라운드가 바깥쪽으로 새어 나오는 현상(bleeding/clipping mismatch)을 완벽히 차단하고 깔끔한 iOS 감성의 클리핑을 실현합니다.
+        - 폰트 스펙은 타이틀 `text-sm font-bold`, 서브타이틀 `text-[10px] font-bold text-[#86868B] mt-0.5 leading-none`으로 레이어 위계를 완벽히 싱크합니다.
     - **Disabled States**: 삭제 불가 상태 등에서는 `opacity-30`과 `cursor-not-allowed`를 적용하여 명확한 인터랙션 제한 피드백 제공.

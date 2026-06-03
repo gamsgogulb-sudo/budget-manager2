@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLedgers } from '../context/LedgerContext';
 import { subscribeTransactions, deleteTransaction, subscribeSubCategories } from '../services/transactionService';
 import { Transaction, SubCategory } from '../types';
-import { formatCurrency, formatDate, cn } from '../lib/utils';
+import { formatCurrency, formatDate, cn, getLocalDateString } from '../lib/utils';
 import { 
   Plus, Paperclip, Search, Filter, Trash2, Edit2, ArrowUpRight, ArrowDownLeft, 
   FileDown, X, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown,
@@ -212,7 +212,7 @@ export default function Transactions() {
     wscols[11] = { wch: 20 }; // 고유ID
     worksheet['!cols'] = wscols;
 
-    XLSX.writeFile(workbook, `GULBZZUS_Transactions_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(workbook, `GULBZZUS_Transactions_${getLocalDateString()}.xlsx`);
   };
 
   const handleDelete = async (id: string) => {
@@ -398,7 +398,7 @@ export default function Transactions() {
         </div>
 
         {/* Mobile Minimal List View */}
-        <div className="sm:hidden space-y-1">
+        <div className="sm:hidden space-y-2">
           {loading ? (
              <div className="p-10 text-center text-[#86868B] text-xs font-semibold italic">불러오는 중...</div>
           ) : filteredTransactions.length === 0 ? (
@@ -409,26 +409,100 @@ export default function Transactions() {
                                  t.type === 'expense' ? 'text-[#FF3B30]' :
                                  t.type === 'balance_adj' ? 'text-[#007AFF]' : 'text-[#FF9500]';
 
+              // Extract Month and Day for Calendar-style badge
+              let tMonth = '';
+              let tDay = '';
+              try {
+                if (t.date) {
+                  const parts = t.date.split('-');
+                  if (parts.length >= 3) {
+                    tMonth = parts[1];
+                    tDay = parts[2];
+                  } else {
+                    const parsed = parseISO(t.date);
+                    tMonth = format(parsed, 'MM');
+                    tDay = format(parsed, 'dd');
+                  }
+                }
+              } catch (e) {
+                tMonth = '01';
+                tDay = '01';
+              }
+
+              const hasImage = (t.photoUrls && t.photoUrls.length > 0) || t.photoUrl;
+
               return (
-                <div key={t.id} className="py-4 flex items-center justify-between active:bg-[#F2F2F7] transition-colors rounded-2xl px-2" onClick={() => handleEdit(t)}>
-                  <div className="flex flex-col min-w-0 pr-4">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-sm font-semibold text-[#1D1D1F] truncate">{t.memo}</span>
-                      {((t.photoUrls && t.photoUrls.length > 0) || t.photoUrl) && (
-                        <ImageIcon className="w-3 h-3 text-gray-300 shrink-0" />
-                      )}
+                <div 
+                  key={t.id} 
+                  className="py-4 px-3 flex items-center justify-between active:bg-[#F2F2F7] hover:bg-[#F5F5F7] transition-all rounded-3xl cursor-pointer border border-[#F2F2F7] shadow-sm bg-white" 
+                  onClick={() => handleEdit(t)}
+                >
+                  <div className="flex items-center gap-3 overflow-hidden flex-1">
+                    {/* Calendar Badge */}
+                    <div className="flex flex-col items-center justify-center w-10 h-10 bg-[#F2F2F7] rounded-xl shrink-0 border border-gray-100">
+                      <span className="text-[9px] font-bold text-gray-400 leading-none">{tMonth}</span>
+                      <span className="text-[13px] font-black text-[#1D1D1F] mt-[2px] leading-none">{tDay}</span>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                       <span className="text-[10px] font-bold text-[#007AFF]">{t.subCategory || '분류없음'}</span>
-                       <span className="w-0.5 h-0.5 bg-gray-300 rounded-full"></span>
-                       <span className="text-[10px] text-[#86868B] font-medium">{t.paymentMethod}</span>
+
+                    <div className="min-w-0 flex-1">
+                      {/* Top Row: Settlement Badge + Memo */}
+                      <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                        <span className={cn(
+                          "px-1.5 py-0.5 rounded text-[8px] font-bold border shrink-0",
+                          t.settlementStatus === '완료' 
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-[#34C759]" 
+                            : t.settlementStatus === '대기'
+                            ? "bg-orange-500/10 border-orange-500/20 text-[#FF9500]"
+                            : "bg-gray-500/10 border-gray-500/20 text-gray-500"
+                        )}>
+                          {t.settlementStatus || 'N/A'}
+                        </span>
+                        <span className="text-sm font-bold text-[#1D1D1F] truncate">
+                          {t.memo || t.subCategory || '내역 없음'}
+                        </span>
+                        {hasImage && (
+                          <span className="text-[10px] shrink-0" title="Receipt attached">🧾</span>
+                        )}
+                      </div>
+
+                      {/* Bottom Row: Type + Account + Subcategory */}
+                      <div className="flex items-center gap-1.5 text-[10px] text-[#86868B] font-semibold whitespace-nowrap overflow-hidden">
+                        <span className={cn(
+                          "px-1.5 py-[1px] rounded-[6px] text-[8px] font-bold border shrink-0",
+                          t.type === 'income' ? 'bg-[#34C759]/10 border-[#34C759]/20 text-[#34C759]' :
+                          t.type === 'expense' ? 'bg-[#FF3B30]/10 border-[#FF3B30]/20 text-[#FF3B30]' :
+                          t.type === 'transfer' ? 'bg-[#007AFF]/10 border-[#007AFF]/20 text-[#007AFF]' :
+                          'bg-[#F2F2F7] border-transparent text-[#1D1D1F]'
+                        )}>
+                          {t.type === 'income' ? '수입' : t.type === 'expense' ? '지출' : t.type === 'transfer' ? '이체' : '정산'}
+                        </span>
+                        
+                        <span className="truncate max-w-[80px]">
+                          {t.type === 'transfer' ? (
+                            <span className="flex items-center gap-0.5">
+                              <span>{t.paymentMethod}</span>
+                              <ChevronRight className="w-2 h-2 text-gray-300" />
+                              <span>{t.settledToAccount}</span>
+                            </span>
+                          ) : t.paymentMethod}
+                        </span>
+
+                        <span className="opacity-30 shrink-0">•</span>
+                        <span className="text-[#007AFF] font-bold truncate max-w-[80px]">
+                          {t.subCategory || '분류없음'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className={cn("text-base font-bold tracking-tight", amountColor)}>
-                      {t.type === 'income' ? '₩' : t.type === 'expense' ? '-₩' : ''}{t.amount.toLocaleString()}
+
+                  {/* Price Section */}
+                  <div className="text-right shrink-0 ml-3">
+                    <p className={cn("text-sm font-black tracking-tight", amountColor)}>
+                      {t.type === 'income' ? '+' : t.type === 'expense' ? '-' : ''}{t.amount.toLocaleString()}원
                     </p>
-                    <p className="text-[9px] text-[#86868B] font-bold uppercase tracking-wider">{formatDate(t.date).slice(5)}</p>
+                    <p className="text-[9px] text-gray-400 font-bold tracking-wider mt-0.5">
+                      {formatDate(t.date).slice(5)}
+                    </p>
                   </div>
                 </div>
               );
@@ -454,7 +528,7 @@ export default function Transactions() {
               setEditingTransaction(undefined);
               setIsModalOpen(true);
             }}
-            className="fixed bottom-24 right-6 w-14 h-14 bg-[#007AFF] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(0,122,255,0.3)] hover:scale-110 active:scale-95 transition-all z-[30] group"
+            className="fixed bottom-32 right-6 w-14 h-14 bg-[#007AFF] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(0,122,255,0.3)] hover:scale-110 active:scale-95 transition-all z-[30] group"
             aria-label="Add Transaction"
           >
             <Plus className="w-7 h-7" />

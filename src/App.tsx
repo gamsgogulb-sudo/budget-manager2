@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 
 import Transactions from './pages/Transactions';
 import Config from './pages/Config';
+import BatchSetEditor from './pages/BatchInput/BatchSetEditor';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -38,6 +39,8 @@ function AppRoutes() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/settings" element={<Config />} />
+          <Route path="/settings/batch/new" element={<BatchSetEditor />} />
+          <Route path="/settings/batch/edit/:setId" element={<BatchSetEditor />} />
         </Route>
       )}
 

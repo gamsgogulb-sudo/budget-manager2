@@ -71,6 +71,27 @@ export interface Stock {
   ownerId: string;
 }
 
+export interface BatchEntryItem {
+  name?: string;
+  amount?: number;
+  category: string;
+  subCategory?: string;
+  type: TransactionType;
+  paymentMethod?: string;
+  memo?: string;
+  settledFromAccount?: string;
+  settledToAccount?: string;
+}
+
+export interface BatchEntrySet {
+  id: string;
+  name: string;
+  items: BatchEntryItem[];
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;

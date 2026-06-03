@@ -12,12 +12,15 @@ import {
 } from '../services/transactionService';
 import { getOrCreateAppFolder, uploadToDrive, downloadDriveFile } from '../services/googleDriveService';
 import { Transaction, TransactionType, SubCategory, AccountCard } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getLocalDateString } from '../lib/utils';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onLocalSubmit?: (data: any) => void;
   editingTransaction?: Transaction;
+  title?: string;
+  disableDate?: boolean;
 }
 
 const DriveImage = ({ url, accessToken, className }: { url: string, accessToken: string | null, className?: string }) => {
@@ -80,7 +83,7 @@ const DriveImage = ({ url, accessToken, className }: { url: string, accessToken:
   );
 };
 
-export default function TransactionModal({ isOpen, onClose, editingTransaction }: Props) {
+export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editingTransaction, title, disableDate }: Props) {
   const { user, accessToken, clearAccessToken } = useAuth();
   const { currentLedger } = useLedgers();
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
@@ -103,7 +106,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
     category: '',
     subCategory: '',
     paymentMethod: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getLocalDateString(),
     type: 'expense' as TransactionType,
     settlementStatus: 'N/A',
     marker: false,
@@ -153,7 +156,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
         category: '',
         subCategory: '',
         paymentMethod: accountCards.find(a => a.isFavorite)?.name || accountCards[0]?.name || '',
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalDateString(),
         type: 'expense',
         settlementStatus: 'N/A',
         marker: false,
@@ -199,12 +202,14 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
       const data = {
         ...formData,
         amount: Number(formData.amount),
-        date: new Date(formData.date).toISOString(),
+        date: formData.date,
         createdAt: editingTransaction?.createdAt || new Date().toISOString(),
         photoUrls, // Updated URLs from Drive
       };
 
-      if (editingTransaction) {
+      if (onLocalSubmit) {
+        onLocalSubmit(data);
+      } else if (editingTransaction) {
         await updateTransaction(currentLedger.id, editingTransaction.id, data);
       } else {
         await addTransaction(currentLedger.id, user.uid, data);
@@ -246,7 +251,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
     <>
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[300] flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -268,7 +273,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
 
             <div className="px-6 py-4 flex items-center justify-between border-b border-gray-50">
               <h2 className="text-xl font-display font-bold text-[#5C544E]">
-                {editingTransaction ? '내역 수정' : '신규 내역 추가'}
+                {title || (editingTransaction ? '내역 수정' : '신규 내역 추가')}
               </h2>
               <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="w-5 h-5 text-gray-400" />
@@ -407,20 +412,25 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
                 </motion.div>
               )}
 
-              {/* 5. Date & Memo */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  <div className="space-y-4">
-                    <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">날짜</label>
-                    <div className="relative">
-                      <input
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="theme-input w-full appearance-none pr-10"
-                        style={{ maxWidth: '100%' }}
-                      />
+                {/* 5. Date & Memo */}
+                <div className={cn(
+                  "grid gap-4 sm:gap-6",
+                  disableDate ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
+                )}>
+                  {!disableDate && (
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">날짜</label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          value={formData.date}
+                          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                          className="theme-input w-full appearance-none pr-10"
+                          style={{ maxWidth: '100%' }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="space-y-4">
                     <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">메모 (선택)</label>
                     <input
@@ -565,7 +575,7 @@ export default function TransactionModal({ isOpen, onClose, editingTransaction }
 
     <AnimatePresence>
       {selectionState.isOpen && (
-        <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[310] flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

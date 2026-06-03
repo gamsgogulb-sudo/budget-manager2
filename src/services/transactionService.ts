@@ -97,6 +97,8 @@ export function subscribeSubCategories(ledgerId: string, callback: (data: any[])
   const q = query(collection(db, path), orderBy('name'));
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
   });
 }
 
@@ -127,5 +129,59 @@ export function subscribeAccountCards(ledgerId: string, callback: (data: any[]) 
   const q = query(collection(db, path), orderBy('name'));
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
   });
+}
+
+// Batch Entry Sets
+export function subscribeBatchEntrySets(ledgerId: string, callback: (data: any[]) => void) {
+  const path = `ledgers/${ledgerId}/entrySets`;
+  const q = query(
+    collection(db, path)
+  );
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
+  });
+}
+
+export async function addBatchEntrySet(ledgerId: string, userId: string, data: any) {
+  const path = `ledgers/${ledgerId}/entrySets`;
+  try {
+    return await addDoc(collection(db, path), {
+      ...data,
+      ownerId: userId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function updateBatchEntrySet(ledgerId: string, setId: string, data: any) {
+  const path = `ledgers/${ledgerId}/entrySets/${setId}`;
+  try {
+    return await updateDoc(doc(db, path), {
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteBatchEntrySet(ledgerId: string, setId: string) {
+  const path = `ledgers/${ledgerId}/entrySets/${setId}`;
+  console.log('[DEBUG] Attempting to delete batch entry set:', { ledgerId, setId, path });
+  try {
+    const result = await deleteDoc(doc(db, path));
+    console.log('[DEBUG] Deletion successful for path:', path);
+    return result;
+  } catch (error) {
+    console.error('[DEBUG] Deletion failed for path:', path, error);
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
 }
