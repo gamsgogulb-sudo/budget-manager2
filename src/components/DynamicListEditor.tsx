@@ -54,7 +54,7 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[320] flex items-end justify-center sm:items-center sm:justify-center p-0 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -67,7 +67,7 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100"
+            className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-none overflow-hidden border border-gray-100"
           >
             <div className="w-full flex justify-center pt-4 pb-1 sm:hidden">
               <div className="w-10 h-1 bg-gray-100 rounded-full" />
@@ -76,8 +76,8 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
             <div className="p-8 pb-6 border-b border-gray-50 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={cn(
-                  "w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-white",
-                  type === 'subCategory' ? "bg-[#007AFF] shadow-[#007AFF]/20" : "bg-[#1D1D1F]"
+                  "w-12 h-12 rounded-[11px] flex items-center justify-center text-white",
+                  type === 'subCategory' ? "bg-[#0066cc]" : "bg-[#1D1D1F]"
                 )}>
                   {type === 'subCategory' ? <Layers className="w-6 h-6" /> : <CreditCard className="w-6 h-6" />}
                 </div>
@@ -100,8 +100,8 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                   className="theme-input flex-1 font-bold"
                 />
                 <button type="submit" className={cn(
-                  "theme-btn-primary w-14 h-14 p-0 shrink-0 rounded-[1.25rem]",
-                  type === 'subCategory' ? "bg-[#007AFF] shadow-[#007AFF]/20" : "bg-[#1D1D1F]"
+                  "theme-btn-primary w-14 h-14 p-0 shrink-0 rounded-[11px]",
+                  type === 'subCategory' ? "bg-[#0066cc]" : "bg-[#1D1D1F]"
                 )}>
                   <Plus className="w-7 h-7" />
                 </button>
@@ -114,7 +114,7 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                   </div>
                 ) : (
                   items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between h-14 px-5 bg-[#F5F5F7] rounded-[1.25rem] group border border-transparent hover:border-[#007AFF]/20 transition-all">
+                    <div key={item.id} className="flex items-center justify-between h-14 px-5 bg-[#F5F5F7] rounded-[11px] group border border-transparent hover:border-[#0066cc]/20 transition-all">
                       <div className="flex items-center gap-4 flex-1 min-w-0 h-full">
                         <button 
                           type="button"
@@ -123,8 +123,8 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                             fn(ledgerId, item.id, { isFavorite: !item.isFavorite });
                           }}
                           className={cn(
-                            "w-9 h-9 rounded-[0.85rem] transition-all flex-shrink-0 shadow-sm flex items-center justify-center",
-                            item.isFavorite ? "text-[#007AFF] bg-white" : "text-[#86868B] hover:bg-white bg-white/50"
+                            "w-9 h-9 rounded-[11px] transition-all flex-shrink-0 flex items-center justify-center",
+                            item.isFavorite ? "text-[#0066cc] bg-white" : "text-[#86868B] hover:bg-white bg-white/50"
                           )}
                         >
                           <Star className={cn("w-4 h-4", item.isFavorite && "fill-current")} />
@@ -142,9 +142,9 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                                 if (e.key === 'Enter') handleUpdate(item.id);
                                 if (e.key === 'Escape') setEditingId(null);
                               }}
-                              className="flex-1 h-10 bg-white border-2 border-[#007AFF] rounded-[0.85rem] px-4 text-sm font-bold text-[#1D1D1F] focus:ring-0"
+                              className="flex-1 h-10 bg-white border-2 border-[#0066cc] rounded-[11px] px-4 text-sm font-bold text-[#1D1D1F] focus:ring-0"
                             />
-                            <button onClick={() => handleUpdate(item.id)} className="p-2 text-[#007AFF]"><Check className="w-5 h-5" /></button>
+                            <button onClick={() => handleUpdate(item.id)} className="p-2 text-[#0066cc]"><Check className="w-5 h-5" /></button>
                           </div>
                         ) : (
                           <span 
@@ -152,7 +152,7 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                               setEditingId(item.id);
                               setEditingValue(item.name);
                             }}
-                            className="text-base font-bold text-[#1D1D1F] truncate cursor-pointer hover:text-[#007AFF] flex-1 leading-none"
+                            className="text-base font-bold text-[#1D1D1F] truncate cursor-pointer hover:text-[#0066cc] flex-1 leading-none"
                           >
                             {item.name}
                           </span>
@@ -161,7 +161,7 @@ export default function DynamicListEditor({ isOpen, onClose, type, items, ledger
                       <button 
                          type="button"
                          onClick={() => handleDelete(item.id)}
-                         className="w-9 h-9 rounded-[0.85rem] text-[#FF3B30] hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 flex items-center justify-center"
+                         className="w-9 h-9 rounded-[11px] text-[#FF3B30] hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 flex items-center justify-center"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

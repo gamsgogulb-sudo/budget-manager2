@@ -19,7 +19,7 @@ function AppRoutes() {
         <div className="flex flex-col items-center gap-6">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-[#007AFF] border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-0 border-4 border-[#0066cc] border-t-transparent rounded-full animate-spin"></div>
           </div>
           <div className="space-y-1 text-center">
             <h2 className="text-sm font-bold text-[#1D1D1F]">GULBZZUS</h2>

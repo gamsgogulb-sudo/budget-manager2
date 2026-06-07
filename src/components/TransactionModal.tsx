@@ -264,7 +264,7 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0.5 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]"
+            className="relative w-full max-w-2xl bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]"
           >
             {/* Handle */}
             <div className="w-full flex justify-center pt-4 pb-2">
@@ -284,14 +284,14 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
               {/* 1. Classification */}
               <div className="space-y-4">
                 <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">거래 유형</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     {transactionTypes.map((t) => (
                       <button
                         key={t.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, type: t.value })}
                         className={cn(
-                          "py-4 rounded-2xl text-xs font-bold transition-all border-2",
+                          "py-4 rounded-[11px] text-xs font-bold transition-all border-2",
                           formData.type === t.value
                             ? "bg-[#1D1D1F] border-[#1D1D1F] text-white shadow-xl scale-[1.02]"
                             : "bg-white border-gray-100 text-[#86868B] hover:border-gray-200"
@@ -308,17 +308,51 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
                 <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em] ml-1">
                   {formData.type === 'balance_adj' ? '기준 금액 (현재 잔액)' : '금액'}
                 </label>
-                <div className="relative group">
+                <div className="relative flex items-center bg-[#F5F5F7] rounded-[18px] px-6 py-6 border-2 border-transparent focus-within:bg-white focus-within:border-[#0066cc] focus-within:ring-4 focus-within:ring-[#0066cc]/10 transition-all">
                   <input
                     type="number"
                     required
                     placeholder="0"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#007AFF] focus:ring-4 focus:ring-[#007AFF]/10 rounded-[2rem] p-6 text-3xl font-bold text-[#1D1D1F] text-right pr-16 transition-all"
+                    className="w-full bg-transparent border-none p-0 text-3xl font-bold text-[#1D1D1F] text-right focus:outline-none focus:ring-0 focus:border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="absolute right-8 top-1/2 -translate-y-1/2 font-bold text-[#86868B] text-xl">원</span>
+                  <div className="flex items-center gap-2 ml-3 shrink-0 select-none">
+                    {formData.amount && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, amount: '' })}
+                        className="p-1.5 rounded-full bg-gray-200/50 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-all flex items-center justify-center active:scale-90"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <span className="font-bold text-[#1D1D1F] text-xl">원</span>
+                  </div>
                 </div>
+                {formData.type !== 'balance_adj' && (
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                    {[
+                      { val: 1000, label: '+1천' },
+                      { val: 5000, label: '+5천' },
+                      { val: 10000, label: '+1만' },
+                      { val: 50000, label: '+5만' },
+                      { val: 100000, label: '+10만' },
+                    ].map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => {
+                          const current = parseFloat(formData.amount || '0') || 0;
+                          setFormData({ ...formData, amount: (current + item.val).toString() });
+                        }}
+                        className="flex-1 min-w-[54px] py-2.5 rounded-[11px] bg-[#F5F5F7] hover:bg-[#EBEBEB] text-xs font-bold text-[#1D1D1F] transition-all active:scale-95"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* 3. Sub Category */}
@@ -331,7 +365,7 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
                       setListEditorType('subCategory');
                       setIsListEditorOpen(true);
                     }}
-                    className="text-[11px] font-bold text-[#007AFF] hover:underline"
+                    className="text-[11px] font-bold text-[#0066cc] hover:underline"
                   >
                     편집
                   </button>
@@ -343,7 +377,7 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
                     type: 'subCategory', 
                     title: '분류 선택' 
                   })}
-                  className="w-full flex items-center justify-between p-5 bg-[#F5F5F7] border border-transparent hover:bg-[#EBEBEB] rounded-[1.5rem] transition-all group"
+                  className="w-full flex items-center justify-between p-5 bg-[#F5F5F7] border border-transparent hover:bg-[#EBEBEB] rounded-[11px] transition-all group"
                 >
                   <span className={cn(
                     "font-bold",
@@ -367,7 +401,7 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
                       setListEditorType('accountCard');
                       setIsListEditorOpen(true);
                     }}
-                    className="text-[11px] font-bold text-[#007AFF] hover:underline"
+                    className="text-[11px] font-bold text-[#0066cc] hover:underline"
                   >
                     편집
                   </button>
@@ -379,7 +413,7 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
                     type: 'accountCard', 
                     title: formData.type === 'transfer' ? '출금 통장 선택' : '결제 수단 선택'
                   })}
-                  className="w-full flex items-center justify-between p-5 bg-[#F5F5F7] border border-transparent hover:bg-[#EBEBEB] rounded-[1.5rem] transition-all group"
+                  className="w-full flex items-center justify-between p-5 bg-[#F5F5F7] border border-transparent hover:bg-[#EBEBEB] rounded-[11px] transition-all group"
                 >
                   <span className={cn(
                     "font-bold",
@@ -588,7 +622,7 @@ export default function TransactionModal({ isOpen, onClose, onLocalSubmit, editi
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0.5 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] sm:max-h-[70vh]"
+            className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] sm:max-h-[70vh]"
           >
             <div className="w-full flex justify-center pt-4 pb-1">
               <div className="w-10 h-1 bg-gray-100 rounded-full" />

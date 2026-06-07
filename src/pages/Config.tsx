@@ -174,7 +174,7 @@ export default function Config() {
           <h2 className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">전체 가계부</h2>
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="text-[11px] font-bold text-[#007AFF] uppercase hover:underline"
+            className="text-[11px] font-bold text-[#0066cc] uppercase hover:underline"
           >
             새 가계부 추가
           </button>
@@ -198,7 +198,7 @@ export default function Config() {
                 key={ledger.id} 
                 className={cn(
                   "relative overflow-hidden theme-card px-5 h-[76px] flex items-center justify-between transition-all select-none cursor-pointer z-40",
-                  isCurrent ? 'border-[#007AFF]/30 bg-[#EBF5FF]/20' : 'hover:border-[#007AFF]/30'
+                  isCurrent ? 'border-[#0066cc]/20 bg-[#0066cc]/5' : 'hover:border-[#0066cc]/20'
                 )}
                 onClick={() => {
                   if (isEditing) return;
@@ -219,7 +219,7 @@ export default function Config() {
                     <input
                       autoFocus
                       type="text"
-                      className="px-3 h-10 bg-[#F5F5F7] border border-transparent focus:bg-white focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] rounded-xl text-sm font-bold transition-all flex-1"
+                      className="px-3 h-10 bg-[#F5F5F7] border border-transparent focus:bg-white focus:ring-2 focus:ring-[#0066cc]/20 focus:border-[#0066cc] rounded-[11px] text-sm font-bold transition-all flex-1"
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
                       onKeyDown={(e) => {
@@ -230,7 +230,7 @@ export default function Config() {
                     <div className="flex gap-1 shrink-0">
                       <button 
                         onClick={() => handleUpdateLedger(ledger.id)}
-                        className="p-2 bg-[#007AFF] text-white rounded-xl shadow-sm"
+                        className="p-2 bg-[#0066cc] text-white rounded-[11px] shadow-none"
                       >
                         <Check className="w-4 h-4" />
                       </button>
@@ -246,14 +246,14 @@ export default function Config() {
                   <div className="flex items-center justify-between w-full h-full">
                     <div className="flex items-center gap-3 min-w-0 pointer-events-none select-none">
                       <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0",
-                        isCurrent ? 'bg-[#007AFF] text-white' : 'bg-[#F5F5F7] text-[#86868B]'
+                        "w-10 h-10 rounded-[11px] flex items-center justify-center transition-colors shrink-0",
+                        isCurrent ? 'bg-[#0066cc] text-white' : 'bg-[#F5F5F7] text-[#86868B]'
                       )}>
                          <CreditCard className="w-5 h-5" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <p className={cn("font-bold text-sm truncate leading-snug", isCurrent ? 'text-[#007AFF]' : 'text-[#1D1D1F]')}>
+                          <p className={cn("font-bold text-sm truncate leading-snug", isCurrent ? 'text-[#0066cc]' : 'text-[#1D1D1F]')}>
                             {ledger.name}
                           </p>
                           <span className={cn(
@@ -266,7 +266,7 @@ export default function Config() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 whitespace-nowrap min-w-0">
-                          {isCurrent && <span className="text-[10px] font-bold text-[#007AFF] opacity-75 leading-none shrink-0">현재 가계부</span>}
+                          {isCurrent && <span className="text-[10px] font-bold text-[#0066cc] opacity-75 leading-none shrink-0">현재 가계부</span>}
                           {!(ledger.ownerId === user?.uid || ledger.ownerEmail === user?.email) && ledger.ownerEmail && (
                             <span className="text-[9px] font-semibold text-[#86868B] leading-none truncate">
                               소유자: {ledger.ownerEmail.split('@')[0]}
@@ -300,7 +300,7 @@ export default function Config() {
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent card selection click when tapping on actions container
                           }}
-                          className="absolute inset-y-0 right-0 z-50 bg-[#F5F5F7]/95 backdrop-blur-md border-l border-gray-100/50 flex items-center px-3 gap-2 h-full rounded-r-[2rem]"
+                          className="absolute inset-y-0 right-0 z-50 bg-[#F5F5F7]/95 backdrop-blur-md border-l border-gray-100/50 flex items-center px-3 gap-2 h-full rounded-r-[18px]"
                           style={{ width: '112px' }}
                         >
                           <button
@@ -310,7 +310,7 @@ export default function Config() {
                               startEditing(ledger);
                               setOpenLedgerActionsId(null);
                             }}
-                            className="flex items-center justify-center w-10 h-10 bg-[#007AFF] text-white active:opacity-85 rounded-xl transition-all font-semibold shrink-0 shadow-sm"
+                            className="flex items-center justify-center w-10 h-10 bg-[#0066cc] text-white active:opacity-85 rounded-[11px] transition-all font-semibold shrink-0 shadow-none"
                             title="이름 수정"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -362,7 +362,7 @@ export default function Config() {
                 navigate('/settings/batch/new');
               }
             }}
-            className="text-[11px] font-bold text-[#007AFF] uppercase hover:underline"
+            className="text-[11px] font-bold text-[#0066cc] uppercase hover:underline"
           >
             새 템플릿 추가
           </button>
@@ -380,10 +380,10 @@ export default function Config() {
           {templates.length === 0 ? (
             <div 
               onClick={() => navigate('/settings/batch/new')}
-              className="relative overflow-hidden h-[76px] theme-card px-5 flex items-center justify-between cursor-pointer hover:border-[#007AFF]/30 transition-all bg-white w-full select-none"
+              className="relative overflow-hidden h-[76px] theme-card px-5 flex items-center justify-between cursor-pointer hover:border-[#0066cc]/20 transition-all bg-white w-full select-none"
             >
               <div className="flex items-center gap-3 min-w-0 pointer-events-none select-none">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 bg-[#F5F5F7] text-[#86868B]">
+                <div className="w-10 h-10 rounded-[11px] flex items-center justify-center transition-colors shrink-0 bg-[#F5F5F7] text-[#86868B]">
                   <Zap className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
@@ -411,11 +411,11 @@ export default function Config() {
                   }
                   handleApplyTemplate(template);
                 }}
-                className="relative overflow-hidden h-[76px] theme-card px-5 flex items-center justify-between cursor-pointer hover:border-[#007AFF]/30 transition-all group bg-white w-full select-none z-40"
+                className="relative overflow-hidden h-[76px] theme-card px-5 flex items-center justify-between cursor-pointer hover:border-[#0066cc]/20 transition-all group bg-white w-full select-none z-40"
               >
                 {/* Static Card Content */}
                 <div className="flex items-center gap-3 min-w-0 pointer-events-none select-none">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 bg-blue-50 text-[#007AFF] group-hover:bg-blue-100">
+                  <div className="w-10 h-10 rounded-[11px] flex items-center justify-center transition-colors shrink-0 bg-[#0066cc]/10 text-[#0066cc] group-hover:bg-[#0066cc]/20">
                     <Zap className="w-5 h-5 fill-current" />
                   </div>
                   <div className="min-w-0">
@@ -453,7 +453,7 @@ export default function Config() {
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent clicking on actions container from closing or activating parent card
                       }}
-                      className="absolute inset-y-0 right-0 z-50 bg-[#F5F5F7]/95 backdrop-blur-md border-l border-gray-100/50 flex items-center px-3 gap-2 h-full rounded-r-[2rem]"
+                      className="absolute inset-y-0 right-0 z-50 bg-[#F5F5F7]/95 backdrop-blur-md border-l border-gray-100/50 flex items-center px-3 gap-2 h-full rounded-r-[18px]"
                       style={{ width: '112px' }}
                     >
                       <button
@@ -463,7 +463,7 @@ export default function Config() {
                           navigate(`/settings/batch/edit/${template.id}`);
                           setOpenTemplateActionsId(null);
                         }}
-                        className="flex items-center justify-center w-10 h-10 bg-[#007AFF] text-white active:opacity-85 rounded-xl transition-all font-semibold shrink-0 shadow-sm"
+                        className="flex items-center justify-center w-10 h-10 bg-[#0066cc] text-white active:opacity-85 rounded-[11px] transition-all font-semibold shrink-0 shadow-none"
                         title="수정"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -510,9 +510,9 @@ export default function Config() {
         {showCreateModal && (
           <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCreateModal(false)} className="absolute inset-0 bg-black/30 backdrop-blur-[4px]" />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden p-8 pt-10">
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-none border border-gray-100 overflow-hidden p-8 pt-10">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-[#007AFF] rounded-xl flex items-center justify-center text-white"><Plus className="w-6 h-6" /></div>
+                  <div className="w-10 h-10 bg-[#0066cc] rounded-[11px] flex items-center justify-center text-white"><Plus className="w-6 h-6" /></div>
                   <h3 className="text-xl font-bold text-[#1D1D1F]">새 가계부 만들기</h3>
                 </div>
                 <div className="space-y-8 mt-6">
@@ -554,9 +554,9 @@ export default function Config() {
             className="fixed bottom-12 left-1/2 z-[100] min-w-[280px]"
           >
             <div className={cn(
-              "px-6 py-3 rounded-2xl shadow-xl border border-white/20 backdrop-blur-md flex items-center justify-center gap-2",
+              "px-6 py-3 rounded-[11px] shadow-none border border-gray-100 backdrop-blur-md flex items-center justify-center gap-2",
               toast.type === 'success' && "bg-[#1D1D1F] text-white",
-              toast.type === 'info' && "bg-[#007AFF] text-white",
+              toast.type === 'info' && "bg-[#0066cc] text-white",
               toast.type === 'error' && "bg-[#FF3B30] text-white"
             )}>
               {toast.type === 'success' && <Check className="w-4 h-4 text-green-400" />}

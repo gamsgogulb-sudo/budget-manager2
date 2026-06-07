@@ -111,12 +111,12 @@ export default function DateNavHeader({
       {/* View Selection & Period Sync Controls */}
       <div className="flex items-center justify-between gap-3 mb-6">
         {showViewToggle ? (
-          <div className="flex items-center gap-1 bg-[#F2F2F7] p-1 rounded-2xl">
+          <div className="flex items-center gap-1 bg-[#F2F2F7] p-1 rounded-full">
             <button 
               onClick={() => setIsMonthlyView(true)}
               className={cn(
-                "px-6 py-2.5 rounded-[1rem] text-xs font-semibold transition-all",
-                isMonthlyView ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
+                "px-6 py-2.5 rounded-full text-xs font-semibold transition-all",
+                isMonthlyView ? "bg-white text-[#1D1D1F] shadow-none" : "text-[#86868B] hover:text-[#1D1D1F]"
               )}
             >
               월간
@@ -124,8 +124,8 @@ export default function DateNavHeader({
             <button 
               onClick={() => setIsMonthlyView(false)}
               className={cn(
-                "px-6 py-2.5 rounded-[1rem] text-xs font-semibold transition-all",
-                !isMonthlyView ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
+                "px-6 py-2.5 rounded-full text-xs font-semibold transition-all",
+                !isMonthlyView ? "bg-white text-[#1D1D1F] shadow-none" : "text-[#86868B] hover:text-[#1D1D1F]"
               )}
             >
               주간
@@ -172,25 +172,25 @@ export default function DateNavHeader({
                   key={idx}
                   onClick={() => onSelectedDateChange(day)}
                   className={cn(
-                    "flex flex-col items-center justify-between py-2 rounded-2xl transition-all aspect-[4/5] relative",
+                    "flex flex-col items-center justify-between py-2 rounded-[11px] transition-all aspect-[4/5] relative",
                     isOtherMonth 
                       ? "opacity-20 pointer-events-none" 
                       : isSel 
                         ? "hover:bg-[#2C2C2E]" 
                         : (isRangeStart || isRangeEnd)
-                          ? "hover:bg-[#0066D6]" 
+                          ? "hover:bg-[#0055b3]" 
                           : isInRange
-                            ? "hover:bg-[#007AFF]/20"
+                            ? "hover:bg-[#0066cc]/20"
                             : "hover:bg-[#F2F2F7]",
                     isSel 
-                      ? "bg-[#1D1D1F] text-white shadow-xl z-20 scale-105" 
+                      ? "bg-[#1D1D1F] text-white shadow-none z-20 scale-105" 
                       : isInRange
-                        ? "bg-[#007AFF]/10 text-[#1D1D1F] z-0"
+                        ? "bg-[#0066cc]/10 text-[#1D1D1F] z-0"
                         : "bg-transparent text-[#1D1D1F]",
-                    isRangeStart && "rounded-l-2xl bg-[#007AFF] text-white z-10",
-                    isRangeEnd && "rounded-r-2xl bg-[#007AFF] text-white z-10",
+                    isRangeStart && "rounded-l-[11px] bg-[#0066cc] text-white z-10",
+                    isRangeEnd && "rounded-r-[11px] bg-[#0066cc] text-white z-10",
                     isInRange && !isRangeStart && !isRangeEnd && "rounded-none",
-                    isTod && !isSel && !isRangeStart && !isRangeEnd && "text-[#007AFF] font-bold"
+                    isTod && !isSel && !isRangeStart && !isRangeEnd && "text-[#0066cc] font-bold"
                   )}
                 >
                   <span className="text-sm font-semibold">{format(day, 'd')}</span>

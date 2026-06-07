@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   Plus, Trash2, ChevronLeft, Save, ShoppingBag, 
-  ArrowUpRight, ArrowDownLeft, CreditCard, LayoutGrid,
+  ArrowUpRight, ArrowDownRight, RefreshCw, ChevronRight, CreditCard, LayoutGrid,
   Check, X, Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -10,7 +10,7 @@ import { useLedgers } from '../../context/LedgerContext';
 import { useAuth } from '../../context/AuthContext';
 import { addBatchEntrySet, updateBatchEntrySet, subscribeBatchEntrySets } from '../../services/transactionService';
 import { BatchEntrySet, BatchEntryItem, Transaction } from '../../types';
-import { cn } from '../../lib/utils';
+import { cn, formatCurrency } from '../../lib/utils';
 import TransactionModal from '../../components/TransactionModal';
 
 export default function BatchSetEditor() {
@@ -116,7 +116,7 @@ export default function BatchSetEditor() {
   if (loading) {
     return (
       <div className="h-screen w-full flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#007AFF] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#0066cc] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -167,13 +167,15 @@ export default function BatchSetEditor() {
         <button
           disabled={saving}
           onClick={handleSave}
-          className="w-12 h-12 bg-[#1D1D1F] text-white rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50"
-          title="저장하기"
+          className="h-10 px-4 bg-[#0066cc] text-white font-bold text-sm rounded-full flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all shadow-sm disabled:opacity-50 shrink-0"
         >
           {saving ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Save className="w-5 h-5" />
+            <>
+              <Save className="w-4 h-4" />
+              <span>저장</span>
+            </>
           )}
         </button>
       </header>
@@ -193,48 +195,93 @@ export default function BatchSetEditor() {
             </div>
           ) : (
             <AnimatePresence mode="popLayout">
-              {items.map((item, index) => (
-                <motion.div
-                  key={index}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  onClick={() => openEditItemModal(index)}
-                  className="theme-card p-4 flex items-center justify-between group hover:border-[#007AFF]/30 transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                      item.type === 'expense' ? "bg-rose-50 text-rose-500" : "bg-emerald-50 text-emerald-500"
-                    )}>
-                      {item.type === 'expense' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-[#1D1D1F] line-clamp-1">{item.memo || '내역 없음'}</h3>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-bold text-[#86868B] uppercase tracking-wider">{item.subCategory}</span>
-                        <span className="text-[10px] text-gray-300">•</span>
-                        <span className="text-[10px] font-medium text-[#86868B]">{item.paymentMethod}</span>
+              {items.map((item, index) => {
+                const amountColor = item.type === 'income' ? 'text-[#34C759]' : 
+                                    item.type === 'expense' ? 'text-[#FF3B30]' :
+                                    item.type === 'balance_adj' ? 'text-[#0066cc]' : 'text-[#FF9500]';
+                return (
+                  <motion.div
+                    key={index}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    onClick={() => openEditItemModal(index)}
+                    className="theme-card p-4 flex items-center justify-between group hover:shadow-md transition-shadow cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden flex-1">
+                      {/* Icon Badge */}
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                        item.type === 'income' ? "bg-[#34C759]/10 text-[#34C759]" :
+                        item.type === 'expense' ? "bg-[#FF3B30]/10 text-[#FF3B30]" :
+                        "bg-[#0066cc]/10 text-[#0066cc]"
+                      )}>
+                        {item.type === 'income' ? <ArrowUpRight className="w-5 h-5" /> : 
+                         item.type === 'expense' ? <ArrowDownRight className="w-5 h-5" /> : 
+                         <RefreshCw className="w-5 h-5" />}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        {/* Top Row: Note (memo) */}
+                        <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                          <span className="text-sm font-bold text-[#1D1D1F] truncate">
+                            {item.memo || item.subCategory || item.category || '내역 없음'}
+                          </span>
+                        </div>
+
+                        {/* Bottom Row: Type badge + Account + SubCategory */}
+                        <div className="flex items-center gap-1.5 text-[10px] text-[#86868B] font-semibold whitespace-nowrap overflow-hidden">
+                          <span className={cn(
+                            "px-1.5 py-[1px] rounded-[6px] text-[8px] font-bold border shrink-0",
+                            item.type === 'income' ? 'bg-[#34C759]/10 border-[#34C759]/20 text-[#34C759]' :
+                            item.type === 'expense' ? 'bg-[#FF3B30]/10 border-[#FF3B30]/20 text-[#FF3B30]' :
+                            item.type === 'transfer' ? 'bg-[#0066cc]/10 border-[#0066cc]/20 text-[#0066cc]' :
+                            'bg-[#F2F2F7] border-transparent text-[#1D1D1F]'
+                          )}>
+                            {item.type === 'income' ? '수입' : item.type === 'expense' ? '지출' : item.type === 'transfer' ? '이체' : '정산'}
+                          </span>
+                          
+                          <span className="truncate max-w-[100px]">
+                            {item.type === 'transfer' ? (
+                              <span className="flex items-center gap-0.5">
+                                <span>{item.paymentMethod}</span>
+                                <ChevronRight className="w-2 h-2 text-gray-300" />
+                                <span>{item.settledToAccount}</span>
+                              </span>
+                            ) : item.paymentMethod}
+                          </span>
+                          
+                          {item.subCategory && (
+                            <>
+                              <span className="opacity-30 shrink-0">•</span>
+                              <span className="text-[#0066cc] font-bold truncate max-w-[100px]">
+                                {item.subCategory}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p className={cn(
-                      "text-sm font-bold tabular-nums",
-                      item.type === 'expense' ? "text-[#1D1D1F]" : "text-emerald-500"
-                    )}>
-                      {item.type === 'expense' ? '-' : '+'}{item.amount?.toLocaleString()}원
-                    </p>
-                    <button 
-                      onClick={(e) => removeItem(e, index)}
-                      className="p-2 text-[#FF3B30] opacity-0 group-hover:opacity-100 hover:bg-red-50 rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+
+                    {/* Price Section & Actions */}
+                    <div className="flex items-center gap-3 shrink-0 ml-3">
+                      <div className="text-right">
+                        <p className={cn("text-sm font-black tracking-tight", amountColor)}>
+                          {item.type === 'expense' ? '-' : item.type === 'income' ? '+' : ''}
+                          {formatCurrency(item.amount || 0)}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={(e) => removeItem(e, index)}
+                        className="p-2 text-[#FF3B30] opacity-0 group-hover:opacity-100 hover:bg-red-50 rounded-lg transition-all shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           )}
         </div>
@@ -247,7 +294,7 @@ export default function BatchSetEditor() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={openAddItemModal}
-        className="fixed bottom-8 right-8 w-16 h-16 bg-[#007AFF] text-white rounded-[2rem] flex items-center justify-center shadow-[0_8px_32px_rgba(0,122,255,0.3)] z-50"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-[#0066cc] text-white rounded-full flex items-center justify-center shadow-none z-50"
       >
         <Plus className="w-8 h-8" />
       </motion.button>

@@ -161,6 +161,37 @@ export default function Transactions() {
     return summaries;
   }, [transactions]);
 
+  const runningBalances = useMemo(() => {
+    const sorted = [...transactions].sort((a, b) => {
+      const dateDiff = a.date.localeCompare(b.date);
+      if (dateDiff !== 0) return dateDiff;
+      const createdDiff = (a.createdAt || '').localeCompare(b.createdAt || '');
+      if (createdDiff !== 0) return createdDiff;
+      return a.id.localeCompare(b.id);
+    });
+
+    const balances: Record<string, number> = {};
+    const running: Record<string, number> = {};
+
+    sorted.forEach(t => {
+      if (t.type === 'balance_adj') {
+        balances[t.paymentMethod] = t.amount;
+      } else if (t.type === 'income') {
+        balances[t.paymentMethod] = (balances[t.paymentMethod] || 0) + t.amount;
+      } else if (t.type === 'expense') {
+        balances[t.paymentMethod] = (balances[t.paymentMethod] || 0) - t.amount;
+      } else if (t.type === 'transfer') {
+        balances[t.paymentMethod] = (balances[t.paymentMethod] || 0) - t.amount;
+        if (t.settledToAccount) {
+          balances[t.settledToAccount] = (balances[t.settledToAccount] || 0) + t.amount;
+        }
+      }
+      running[t.id] = balances[t.paymentMethod] || 0;
+    });
+
+    return running;
+  }, [transactions]);
+
   const settlementOptions = ['대기', '완료', '보류', 'N/A'];
 
   const toggleFilter = (type: keyof FilterState, value: string) => {
@@ -244,13 +275,13 @@ export default function Transactions() {
       {/* Control Tools Section */}
       <div className="mb-8 space-y-4">
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#86868B] group-focus-within:text-[#007AFF] transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#86868B] group-focus-within:text-[#0066cc] transition-colors" />
           <input 
             type="text" 
             placeholder="기록 검색 및 필터링..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-12 bg-[#F2F2F7] border-transparent focus:bg-white focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] rounded-2xl pl-12 pr-4 text-sm font-medium text-[#1D1D1F] transition-all"
+            className="w-full h-12 bg-[#F2F2F7] border-transparent focus:bg-white focus:ring-2 focus:ring-[#0066cc]/10 focus:border-[#0066cc] rounded-[18px] pl-12 pr-4 text-sm font-medium text-[#1D1D1F] transition-all"
           />
         </div>
 
@@ -259,9 +290,9 @@ export default function Transactions() {
             id="filter-type-button"
             onClick={() => setActiveFilterType('type')}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2.5 rounded-[1rem] text-xs font-semibold transition-all whitespace-nowrap border",
+              "flex items-center gap-1.5 px-4 py-2.5 rounded-[11px] text-xs font-semibold transition-all whitespace-nowrap border",
               filters.types.length > 0
-                ? "bg-[#007AFF] text-white border-transparent"
+                ? "bg-[#0066cc] text-white border-transparent"
                 : "bg-white text-[#1D1D1F] border-[#F2F2F7] hover:border-gray-200 shadow-sm"
             )}
           >
@@ -273,7 +304,7 @@ export default function Transactions() {
             id="filter-status-button"
             onClick={() => setActiveFilterType('status')}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2.5 rounded-[1rem] text-xs font-semibold transition-all whitespace-nowrap border",
+              "flex items-center gap-1.5 px-4 py-2.5 rounded-[11px] text-xs font-semibold transition-all whitespace-nowrap border",
               filters.settlementStatuses.length > 0
                 ? "bg-[#5856D6] text-white border-transparent"
                 : "bg-white text-[#1D1D1F] border-[#F2F2F7] hover:border-gray-200 shadow-sm"
@@ -357,13 +388,18 @@ export default function Transactions() {
                         )}
                       </div>
                     </td>
-                    <td className={cn(
-                      "px-4 py-5 text-right font-bold text-sm",
-                      t.type === 'income' ? 'text-[#34C759]' : 
-                      t.type === 'expense' ? 'text-[#FF3B30]' :
-                      t.type === 'balance_adj' ? 'text-[#007AFF]' : 'text-[#FF9500]'
-                    )}>
-                      {t.type === 'income' ? '₩' : t.type === 'expense' ? '-₩' : ''}{t.amount.toLocaleString()}
+                    <td className="px-4 py-5 text-right">
+                      <div className={cn(
+                        "font-bold text-sm",
+                        t.type === 'income' ? 'text-[#34C759]' : 
+                        t.type === 'expense' ? 'text-[#FF3B30]' :
+                        t.type === 'balance_adj' ? 'text-[#0066cc]' : 'text-[#FF9500]'
+                      )}>
+                        {t.type === 'income' ? '+' : t.type === 'expense' ? '-' : ''}{t.amount.toLocaleString()}원
+                      </div>
+                      <div className="text-[10px] text-[#86868B] font-bold mt-0.5">
+                        {runningBalances[t.id] !== undefined ? `${runningBalances[t.id].toLocaleString()}원` : '0원'}
+                      </div>
                     </td>
                     <td className="px-4 py-5 text-[10px] text-[#86868B] font-semibold">
                       {t.type === 'transfer' ? (
@@ -407,7 +443,7 @@ export default function Transactions() {
             filteredTransactions.map((t) => {
               const amountColor = t.type === 'income' ? 'text-[#34C759]' : 
                                  t.type === 'expense' ? 'text-[#FF3B30]' :
-                                 t.type === 'balance_adj' ? 'text-[#007AFF]' : 'text-[#FF9500]';
+                                 t.type === 'balance_adj' ? 'text-[#0066cc]' : 'text-[#FF9500]';
 
               // Extract Month and Day for Calendar-style badge
               let tMonth = '';
@@ -471,7 +507,7 @@ export default function Transactions() {
                           "px-1.5 py-[1px] rounded-[6px] text-[8px] font-bold border shrink-0",
                           t.type === 'income' ? 'bg-[#34C759]/10 border-[#34C759]/20 text-[#34C759]' :
                           t.type === 'expense' ? 'bg-[#FF3B30]/10 border-[#FF3B30]/20 text-[#FF3B30]' :
-                          t.type === 'transfer' ? 'bg-[#007AFF]/10 border-[#007AFF]/20 text-[#007AFF]' :
+                          t.type === 'transfer' ? 'bg-[#0066cc]/10 border-[#0066cc]/20 text-[#0066cc]' :
                           'bg-[#F2F2F7] border-transparent text-[#1D1D1F]'
                         )}>
                           {t.type === 'income' ? '수입' : t.type === 'expense' ? '지출' : t.type === 'transfer' ? '이체' : '정산'}
@@ -488,7 +524,7 @@ export default function Transactions() {
                         </span>
 
                         <span className="opacity-30 shrink-0">•</span>
-                        <span className="text-[#007AFF] font-bold truncate max-w-[80px]">
+                        <span className="text-[#0066cc] font-bold truncate max-w-[80px]">
                           {t.subCategory || '분류없음'}
                         </span>
                       </div>
@@ -500,8 +536,8 @@ export default function Transactions() {
                     <p className={cn("text-sm font-black tracking-tight", amountColor)}>
                       {t.type === 'income' ? '+' : t.type === 'expense' ? '-' : ''}{t.amount.toLocaleString()}원
                     </p>
-                    <p className="text-[9px] text-gray-400 font-bold tracking-wider mt-0.5">
-                      {formatDate(t.date).slice(5)}
+                    <p className="text-[9px] text-[#86868B] font-bold mt-0.5">
+                      {runningBalances[t.id] !== undefined ? `${runningBalances[t.id].toLocaleString()}원` : '0원'}
                     </p>
                   </div>
                 </div>
@@ -528,7 +564,7 @@ export default function Transactions() {
               setEditingTransaction(undefined);
               setIsModalOpen(true);
             }}
-            className="fixed bottom-32 right-6 w-14 h-14 bg-[#007AFF] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(0,122,255,0.3)] hover:scale-110 active:scale-95 transition-all z-[30] group"
+            className="fixed bottom-32 right-6 w-14 h-14 bg-[#0066cc] text-white rounded-full flex items-center justify-center shadow-none hover:scale-110 active:scale-95 transition-all z-[30] group"
             aria-label="Add Transaction"
           >
             <Plus className="w-7 h-7" />
@@ -539,7 +575,7 @@ export default function Transactions() {
       {/* Filter Bottom Sheet */}
       <AnimatePresence>
         {activeFilterType && (
-          <div className="fixed inset-0 z-[60] flex items-end justify-center">
+          <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -552,7 +588,7 @@ export default function Transactions() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              className="relative w-full max-w-2xl bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
             >
               <div className="w-full flex justify-center pt-4 pb-2">
                 <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
@@ -627,9 +663,9 @@ export default function Transactions() {
                               }
                             }}
                             className={cn(
-                              "flex items-center justify-between p-4 rounded-2xl border transition-all h-16",
+                              "flex items-center justify-between p-4 rounded-[11px] border transition-all h-16",
                               isSelected 
-                                ? "bg-blue-50 border-blue-100 text-[#007AFF]" 
+                                ? "bg-[#0066cc]/10 border-[#0066cc]/20 text-[#0066cc]" 
                                 : "bg-[#F5F5F7] border-transparent text-[#1D1D1F] hover:bg-[#E8E8ED]"
                             )}
                           >
@@ -643,9 +679,9 @@ export default function Transactions() {
                         <button
                           onClick={() => setFilters(prev => ({ ...prev, settlementStatuses: [] }))}
                           className={cn(
-                            "flex items-center justify-between p-4 rounded-2xl border transition-all h-16",
+                            "flex items-center justify-between p-4 rounded-[11px] border transition-all h-16",
                             filters.settlementStatuses.length === 0 
-                              ? "bg-blue-50 border-blue-100 text-[#007AFF]" 
+                              ? "bg-[#0066cc]/10 border-[#0066cc]/20 text-[#0066cc]" 
                               : "bg-[#F5F5F7] border-transparent text-[#1D1D1F] hover:bg-[#E8E8ED]"
                           )}
                         >
@@ -659,9 +695,9 @@ export default function Transactions() {
                               key={option}
                               onClick={() => toggleFilter('settlementStatuses', option)}
                               className={cn(
-                                "flex items-center justify-between p-4 rounded-2xl border transition-all h-16",
+                                "flex items-center justify-between p-4 rounded-[11px] border transition-all h-16",
                                 isSelected 
-                                  ? "bg-blue-50 border-blue-100 text-[#007AFF]" 
+                                  ? "bg-[#0066cc]/10 border-[#0066cc]/20 text-[#0066cc]" 
                                   : "bg-[#F5F5F7] border-transparent text-[#1D1D1F] hover:bg-[#E8E8ED]"
                               )}
                             >

@@ -59,7 +59,7 @@ export default function Layout() {
           <div className="max-w-4xl mx-auto px-4 lg:px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div 
-                className="w-8 h-8 bg-[#007AFF] rounded-xl flex items-center justify-center text-white shadow-xl shadow-[#007AFF]/20 transition-transform active:scale-95 cursor-pointer" 
+                className="w-8 h-8 bg-[#0066cc] rounded-[11px] flex items-center justify-center text-white shadow-none transition-transform active:scale-95 cursor-pointer" 
                 onClick={() => navigate('/dashboard')}
               >
                 <CreditCard className="w-5 h-5" />
@@ -71,7 +71,7 @@ export default function Layout() {
               {currentLedger && location.pathname === '/transactions' && (currentLedger.ownerId === user?.uid || currentLedger.canMemberShare) && (
                 <button 
                   onClick={() => setShowShareModal(true)}
-                  className="p-2 text-gray-400 hover:text-[#007AFF] transition-colors border-none bg-transparent active:scale-95"
+                  className="p-2 text-gray-400 hover:text-[#0066cc] transition-colors border-none bg-transparent active:scale-95"
                 >
                   <Share2 className="w-5 h-5" />
                 </button>
@@ -106,7 +106,7 @@ export default function Layout() {
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden"
+                className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-none border border-gray-100 overflow-hidden"
               >
                 {/* Drag Handle */}
                 <div className="w-full flex justify-center pt-4 pb-2 sm:hidden">
@@ -115,7 +115,7 @@ export default function Layout() {
 
                 <div className="p-6 pb-2 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                    <div className="w-10 h-10 bg-[#0066cc]/10 rounded-[11px] flex items-center justify-center text-[#0066cc]">
                       <Share2 className="w-5 h-5" />
                     </div>
                     <div>
@@ -132,7 +132,7 @@ export default function Layout() {
                 </div>
 
                 <div className="p-6 pt-4 space-y-8">
-                  <form onSubmit={handleInvite} className="space-y-6">
+                  <form id="invite-form" onSubmit={handleInvite} className="space-y-6">
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-[#86868B] ml-1">공유할 사용자 이메일</label>
                       <div className="relative">
@@ -171,14 +171,6 @@ export default function Layout() {
                         </button>
                       </div>
                     )}
-
-                    <button
-                      type="submit"
-                      className="theme-btn-primary w-full shadow-lg shadow-blue-500/20"
-                    >
-                      <Plus className="w-5 h-5" />
-                      공유하기
-                    </button>
                   </form>
 
                   {currentLedger.memberEmails && currentLedger.memberEmails.length > 1 && (
@@ -190,13 +182,13 @@ export default function Layout() {
                           if (b === currentLedger.ownerEmail) return 1;
                           return 0;
                         }).map((memberEmail: string) => (
-                          <div key={memberEmail} className="flex items-center gap-3 p-3 bg-[#F5F5F7] rounded-2xl border border-transparent">
-                            <div className="w-8 h-8 rounded-full bg-blue-50 text-[#007AFF] flex items-center justify-center">
+                          <div key={memberEmail} className="flex items-center gap-3 p-3 bg-[#F5F5F7] rounded-[11px] border border-transparent">
+                            <div className="w-8 h-8 rounded-full bg-[#0066cc]/10 text-[#0066cc] flex items-center justify-center">
                               <User className="w-4 h-4" />
                             </div>
                             <span className="text-sm font-medium text-[#1D1D1F]">{memberEmail}</span>
                             {memberEmail === currentLedger.ownerEmail ? (
-                              <span className="ml-auto text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">Owner</span>
+                              <span className="ml-auto text-[10px] font-bold text-[#0066cc] bg-[#0066cc]/10 px-2 py-1 rounded-[11px]">Owner</span>
                             ) : (
                               currentLedger.ownerId === user?.uid && (
                                 <button
@@ -212,6 +204,15 @@ export default function Layout() {
                       </div>
                     </div>
                   )}
+
+                  <button
+                    type="submit"
+                    form="invite-form"
+                    className="theme-btn-primary w-full shadow-none"
+                  >
+                    <Plus className="w-5 h-5" />
+                    공유하기
+                  </button>
                 </div>
                 <div className="h-6" />
               </motion.div>
@@ -222,15 +223,15 @@ export default function Layout() {
         {/* Floating Navigation Bar */}
         {!location.pathname.startsWith('/settings/batch') && (
           <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-[40]">
-            <div className="bg-white/70 backdrop-blur-2xl border border-white/40 ring-1 ring-black/[0.05] shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-[2.5rem] px-4 py-2">
+            <div className="bg-white/85 backdrop-blur-xl border border-gray-100/80 shadow-[0_12px_30px_rgba(0,0,0,0.06)] rounded-[18px] px-4 py-2">
               <div className="flex items-center justify-around h-14">
                 {navItems.map((item) => (
                   <NavLink
                     key={item.path}
                     to={item.path}
                     className={({ isActive }) => cn(
-                      "relative flex flex-col items-center gap-1 p-2 transition-all rounded-2xl min-w-[64px]",
-                      isActive ? "text-[#007AFF]" : "text-[#86868B] hover:text-[#1D1D1F]"
+                      "relative flex flex-col items-center gap-1 p-2 transition-all rounded-[11px] min-w-[64px]",
+                      isActive ? "text-[#0066cc]" : "text-[#86868B] hover:text-[#1D1D1F]"
                     )}
                   >
                     {({ isActive }) => (
@@ -238,7 +239,7 @@ export default function Layout() {
                         {isActive && (
                           <motion.div 
                             layoutId="nav-glow"
-                            className="absolute inset-0 bg-blue-50/50 rounded-2xl -z-10"
+                            className="absolute inset-0 bg-[#0066cc]/10 rounded-[11px] -z-10"
                             transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                           />
                         )}

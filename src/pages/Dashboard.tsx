@@ -135,6 +135,37 @@ export default function Dashboard() {
     return balances;
   }, [transactions]);
 
+  const runningBalances = useMemo(() => {
+    const sorted = [...transactions].sort((a, b) => {
+      const dateDiff = a.date.localeCompare(b.date);
+      if (dateDiff !== 0) return dateDiff;
+      const createdDiff = (a.createdAt || '').localeCompare(b.createdAt || '');
+      if (createdDiff !== 0) return createdDiff;
+      return a.id.localeCompare(b.id);
+    });
+
+    const balances: Record<string, number> = {};
+    const running: Record<string, number> = {};
+
+    sorted.forEach(t => {
+      if (t.type === 'balance_adj') {
+        balances[t.paymentMethod] = t.amount;
+      } else if (t.type === 'income') {
+        balances[t.paymentMethod] = (balances[t.paymentMethod] || 0) + t.amount;
+      } else if (t.type === 'expense') {
+        balances[t.paymentMethod] = (balances[t.paymentMethod] || 0) - t.amount;
+      } else if (t.type === 'transfer') {
+        balances[t.paymentMethod] = (balances[t.paymentMethod] || 0) - t.amount;
+        if (t.settledToAccount) {
+          balances[t.settledToAccount] = (balances[t.settledToAccount] || 0) + t.amount;
+        }
+      }
+      running[t.id] = balances[t.paymentMethod] || 0;
+    });
+
+    return running;
+  }, [transactions]);
+
   // Filtered totals for the period
   const periodTransactions = useMemo(() => {
     return transactions.filter(t => isWithinInterval(parseISO(t.date), dateRange));
@@ -194,11 +225,11 @@ export default function Dashboard() {
     return data;
   }, [periodTransactions]);
 
-  const COLORS = ['#007AFF', '#5856D6', '#FF2D55', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#5AC8FA'];
+  const COLORS = ['#0066cc', '#5856D6', '#FF2D55', '#34C759', '#FF9500', '#AF52DE', '#FF3B30', '#5AC8FA'];
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[400px] text-[#86868B] space-y-4">
-      <RefreshCw className="w-8 h-8 animate-spin text-[#007AFF]" />
+      <RefreshCw className="w-8 h-8 animate-spin text-[#0066cc]" />
       <span className="font-semibold text-sm">기록을 불러오고 있습니다...</span>
     </div>
   );
@@ -209,6 +240,7 @@ export default function Dashboard() {
         accName={selectedAccount} 
         balance={accountStates[selectedAccount] || 0}
         transactions={transactions.filter(t => t.paymentMethod === selectedAccount || (t.type === 'transfer' && t.settledToAccount === selectedAccount))}
+        runningBalances={runningBalances}
         onBack={() => setSelectedAccount(null)}
       />
     );
@@ -224,6 +256,7 @@ export default function Dashboard() {
           : incomeCategoryData.find(c => c.name === selectedCategory.name)?.value || 0
         }
         transactions={periodTransactions.filter(t => t.category === selectedCategory.name && t.type === selectedCategory.type)}
+        runningBalances={runningBalances}
         onBack={() => setSelectedCategory(null)}
       />
     );
@@ -262,7 +295,7 @@ export default function Dashboard() {
       {/* Unified Period Selector Modal/Sheet for Dashboard */}
       <AnimatePresence>
         {isPeriodSelectorOpen && (
-          <div className="fixed inset-0 z-[60] flex items-end justify-center">
+          <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -275,7 +308,7 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              className="relative w-full max-w-2xl bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
             >
               <div className="px-6 py-8">
                 <div className="flex justify-between items-center mb-6">
@@ -339,7 +372,7 @@ export default function Dashboard() {
       <div className="theme-card p-6 min-h-[380px] flex flex-col">
         <div className="flex justify-between items-center mb-10">
           <h2 className="font-bold text-lg text-[#1D1D1F] flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#007AFF]" />
+            <Layers className="w-5 h-5 text-[#0066cc]" />
             현금 흐름 추이
           </h2>
           <div className="flex items-center gap-4 text-xs font-semibold text-[#86868B]">
@@ -425,7 +458,7 @@ export default function Dashboard() {
       <div className="space-y-4">
         <div className="flex justify-between items-center px-2">
           <h2 className="font-bold text-lg text-[#1D1D1F] flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-[#007AFF]" />
+            <Wallet className="w-5 h-5 text-[#0066cc]" />
             보유 통장 내역
           </h2>
           <span className="text-[10px] font-bold text-[#86868B] bg-[#F5F5F7] px-2.5 py-1 rounded-full uppercase tracking-widest">
@@ -458,7 +491,7 @@ function SummaryCard({ title, value, icon, color, trend, subtitle }: {
   title: string, value: number, icon: React.ReactNode, color: 'primary' | 'income' | 'spending', trend?: string, subtitle?: string 
 }) {
   const styles = {
-    primary: "text-[#007AFF] bg-[#007AFF]/10",
+    primary: "text-[#0066cc] bg-[#0066cc]/10",
     income: "text-[#34C759] bg-[#34C759]/10",
     spending: "text-[#FF3B30] bg-[#FF3B30]/10",
   };
@@ -495,7 +528,7 @@ function AccountCard({ name, balance, onClick }: AccountCardProps) {
   return (
     <button 
       onClick={onClick}
-      className="theme-card p-5 text-left group hover:border-[#007AFF]/30 hover:shadow-lg transition-all"
+      className="theme-card p-5 text-left group hover:border-[#0066cc]/20 transition-all"
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -514,7 +547,7 @@ function AccountCard({ name, balance, onClick }: AccountCardProps) {
               {formatCurrency(balance)}
             </p>
           </div>
-          <ChevronRight className="w-5 h-5 text-[#C7C7CC] group-hover:text-[#007AFF] transition-colors" />
+          <ChevronRight className="w-5 h-5 text-[#C7C7CC] group-hover:text-[#0066cc] transition-colors" />
         </div>
       </div>
     </button>
@@ -586,10 +619,11 @@ function CategoryCard({ title, data, total, colors, onCategoryClick }: {
   );
 }
 
-function AccountDetailView({ accName, balance, transactions, onBack }: {
+function AccountDetailView({ accName, balance, transactions, runningBalances, onBack }: {
   accName: string;
   balance: number;
   transactions: Transaction[];
+  runningBalances: Record<string, number>;
   onBack: () => void;
 }) {
   const sortedTs = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -598,7 +632,7 @@ function AccountDetailView({ accName, balance, transactions, onBack }: {
     <div className="space-y-6">
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-[#86868B] hover:text-[#007AFF] font-bold text-sm transition-colors mb-2"
+        className="flex items-center gap-2 text-[#86868B] hover:text-[#0066cc] font-bold text-sm transition-colors mb-2"
       >
         <ArrowLeft className="w-4 h-4" />
         대시보드로 돌아가기
@@ -622,42 +656,112 @@ function AccountDetailView({ accName, balance, transactions, onBack }: {
 
       <div className="space-y-4">
         <h3 className="font-bold text-lg text-[#1D1D1F] px-2 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-[#007AFF]" />
+          <Calendar className="w-5 h-5 text-[#0066cc]" />
           최근 거래 내역
         </h3>
         <div className="grid grid-cols-1 gap-2">
-          {sortedTs.map((t) => (
-            <div key={t.id} className="theme-card p-4 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                  t.type === 'income' ? "bg-[#34C759]/10 text-[#34C759]" :
-                  t.type === 'expense' ? "bg-[#FF3B30]/10 text-[#FF3B30]" :
-                  "bg-[#007AFF]/10 text-[#007AFF]"
-                )}>
-                  {t.type === 'income' ? <ArrowUpRight className="w-5 h-5" /> : 
-                   t.type === 'expense' ? <ArrowDownRight className="w-5 h-5" /> : 
-                   <RefreshCw className="w-5 h-5" />}
+          {sortedTs.map((t) => {
+            let tMonth = '01';
+            let tDay = '01';
+            try {
+              if (t.date) {
+                const parts = t.date.split('-');
+                if (parts.length >= 3) {
+                  tMonth = parts[1];
+                  tDay = parts[2];
+                } else {
+                  const parsed = parseISO(t.date);
+                  tMonth = format(parsed, 'MM');
+                  tDay = format(parsed, 'dd');
+                }
+              }
+            } catch {
+              tMonth = '01';
+              tDay = '01';
+            }
+
+            const hasImage = (t.photoUrls && t.photoUrls.length > 0) || t.photoUrl;
+            const amountColor = t.type === 'income' ? 'text-[#34C759]' : 
+                                t.type === 'expense' ? 'text-[#FF3B30]' :
+                                t.type === 'balance_adj' ? 'text-[#0066cc]' : 'text-[#FF9500]';
+
+            return (
+              <div key={t.id} className="theme-card p-4 flex items-center justify-between hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3 overflow-hidden flex-1">
+                  {/* Calendar Badge */}
+                  <div className="flex flex-col items-center justify-center w-10 h-10 bg-[#F2F2F7] rounded-xl shrink-0 border border-gray-100">
+                    <span className="text-[9px] font-bold text-gray-400 leading-none">{tMonth}</span>
+                    <span className="text-[13px] font-black text-[#1D1D1F] mt-[2px] leading-none">{tDay}</span>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    {/* Top Row: Settlement badge + Note (memo) */}
+                    <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                      <span className={cn(
+                        "px-1.5 py-0.5 rounded text-[8px] font-bold border shrink-0",
+                        t.settlementStatus === '완료' 
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-[#34C759]" 
+                          : t.settlementStatus === '대기'
+                          ? "bg-orange-500/10 border-orange-500/20 text-[#FF9500]"
+                          : "bg-gray-500/10 border-gray-500/20 text-gray-500"
+                      )}>
+                        {t.settlementStatus || '대기'}
+                      </span>
+                      <span className="text-sm font-bold text-[#1D1D1F] truncate">
+                        {t.memo || t.subCategory || '내역 없음'}
+                      </span>
+                      {hasImage && (
+                        <span className="text-[10px] shrink-0" title="Receipt attached">🧾</span>
+                      )}
+                    </div>
+
+                    {/* Bottom Row: Type badge + Account + SubCategory */}
+                    <div className="flex items-center gap-1.5 text-[10px] text-[#86868B] font-semibold whitespace-nowrap overflow-hidden">
+                      <span className={cn(
+                        "px-1.5 py-[1px] rounded-[6px] text-[8px] font-bold border shrink-0",
+                        t.type === 'income' ? 'bg-[#34C759]/10 border-[#34C759]/20 text-[#34C759]' :
+                        t.type === 'expense' ? 'bg-[#FF3B30]/10 border-[#FF3B30]/20 text-[#FF3B30]' :
+                        t.type === 'transfer' ? 'bg-[#0066cc]/10 border-[#0066cc]/20 text-[#0066cc]' :
+                        'bg-[#F2F2F7] border-transparent text-[#1D1D1F]'
+                      )}>
+                        {t.type === 'income' ? '수입' : t.type === 'expense' ? '지출' : t.type === 'transfer' ? '이체' : '정산'}
+                      </span>
+                      
+                      <span className="truncate max-w-[80px]">
+                        {t.type === 'transfer' ? (
+                          <span className="flex items-center gap-0.5">
+                            <span>{t.paymentMethod}</span>
+                            <ChevronRight className="w-2 h-2 text-gray-300" />
+                            <span>{t.settledToAccount}</span>
+                          </span>
+                        ) : t.paymentMethod}
+                      </span>
+                      
+                      {t.subCategory && (
+                        <>
+                          <span className="opacity-30 shrink-0">•</span>
+                          <span className="text-[#0066cc] font-bold truncate max-w-[80px]">
+                            {t.subCategory}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-[#1D1D1F] leading-tight">{t.memo || t.category}</p>
-                  <p className="text-[10px] text-[#86868B] font-semibold">{format(parseISO(t.date), 'yyyy년 MM월 dd일')}</p>
+
+                {/* Price Section */}
+                <div className="text-right shrink-0 ml-3">
+                  <p className={cn("text-sm font-black tracking-tight", amountColor)}>
+                    {t.type === 'expense' || (t.type === 'transfer' && t.paymentMethod === accName) ? '-' : '+'}
+                    {formatCurrency(t.amount)}
+                  </p>
+                  <p className="text-[9px] text-[#86868B] font-bold mt-0.5">
+                    {runningBalances[t.id] !== undefined ? `${runningBalances[t.id].toLocaleString()}원` : '0원'}
+                  </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className={cn(
-                  "text-sm font-bold tracking-tight",
-                  t.type === 'income' ? "text-[#34C759]" :
-                  t.type === 'expense' ? "text-[#FF3B30]" :
-                  "text-[#007AFF]"
-                )}>
-                  {t.type === 'expense' || (t.type === 'transfer' && t.paymentMethod === accName) ? '-' : '+'}
-                  {formatCurrency(t.amount)}
-                </p>
-                <p className="text-[10px] text-[#86868B] font-bold uppercase">{t.subCategory || t.category}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {sortedTs.length === 0 && (
             <div className="theme-card p-12 text-center text-[#86868B] text-sm">
               내역이 없습니다.
@@ -669,11 +773,12 @@ function AccountDetailView({ accName, balance, transactions, onBack }: {
   );
 }
 
-function CategoryDetailView({ categoryName, type, total, transactions, onBack }: {
+function CategoryDetailView({ categoryName, type, total, transactions, runningBalances, onBack }: {
   categoryName: string;
   type: 'income' | 'expense';
   total: number;
   transactions: Transaction[];
+  runningBalances: Record<string, number>;
   onBack: () => void;
 }) {
   const sortedTs = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -682,7 +787,7 @@ function CategoryDetailView({ categoryName, type, total, transactions, onBack }:
     <div className="space-y-6">
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-[#86868B] hover:text-[#007AFF] font-bold text-sm transition-colors mb-2"
+        className="flex items-center gap-2 text-[#86868B] hover:text-[#0066cc] font-bold text-sm transition-colors mb-2"
       >
         <ArrowLeft className="w-4 h-4" />
         대시보드로 돌아가기
@@ -715,46 +820,112 @@ function CategoryDetailView({ categoryName, type, total, transactions, onBack }:
 
       <div className="space-y-4">
         <h3 className="font-bold text-lg text-[#1D1D1F] px-2 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-[#007AFF]" />
+          <Calendar className="w-5 h-5 text-[#0066cc]" />
           분류별 상세 내역
         </h3>
         <div className="grid grid-cols-1 gap-2">
-          {sortedTs.map((t) => (
-            <div key={t.id} className="theme-card p-4 flex justify-between items-center hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                  t.type === 'income' ? "bg-[#34C759]/10 text-[#34C759]" :
-                  t.type === 'expense' ? "bg-[#FF3B30]/10 text-[#FF3B30]" :
-                  "bg-[#007AFF]/10 text-[#007AFF]"
-                )}>
-                  {t.type === 'income' ? <ArrowUpRight className="w-5 h-5" /> : 
-                   t.type === 'expense' ? <ArrowDownRight className="w-5 h-5" /> : 
-                   <RefreshCw className="w-5 h-5" />}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-[#1D1D1F] leading-tight">{t.memo || t.subCategory || t.category}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] text-[#86868B] font-semibold">{format(parseISO(t.date), 'yyyy년 MM월 dd일')}</p>
-                    <span className="w-1 h-1 rounded-full bg-[#E5E5EA]"></span>
-                    <p className="text-[10px] text-[#86868B] font-bold uppercase">{t.paymentMethod}</p>
+          {sortedTs.map((t) => {
+            let tMonth = '01';
+            let tDay = '01';
+            try {
+              if (t.date) {
+                const parts = t.date.split('-');
+                if (parts.length >= 3) {
+                  tMonth = parts[1];
+                  tDay = parts[2];
+                } else {
+                  const parsed = parseISO(t.date);
+                  tMonth = format(parsed, 'MM');
+                  tDay = format(parsed, 'dd');
+                }
+              }
+            } catch {
+              tMonth = '01';
+              tDay = '01';
+            }
+
+            const hasImage = (t.photoUrls && t.photoUrls.length > 0) || t.photoUrl;
+            const amountColor = t.type === 'income' ? 'text-[#34C759]' : 
+                                t.type === 'expense' ? 'text-[#FF3B30]' :
+                                t.type === 'balance_adj' ? 'text-[#0066cc]' : 'text-[#FF9500]';
+
+            return (
+              <div key={t.id} className="theme-card p-4 flex items-center justify-between hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3 overflow-hidden flex-1">
+                  {/* Calendar Badge */}
+                  <div className="flex flex-col items-center justify-center w-10 h-10 bg-[#F2F2F7] rounded-xl shrink-0 border border-gray-100">
+                    <span className="text-[9px] font-bold text-gray-400 leading-none">{tMonth}</span>
+                    <span className="text-[13px] font-black text-[#1D1D1F] mt-[2px] leading-none">{tDay}</span>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    {/* Top Row: Settlement badge + Note (memo) */}
+                    <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                      <span className={cn(
+                        "px-1.5 py-0.5 rounded text-[8px] font-bold border shrink-0",
+                        t.settlementStatus === '완료' 
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-[#34C759]" 
+                          : t.settlementStatus === '대기'
+                          ? "bg-orange-500/10 border-orange-500/20 text-[#FF9500]"
+                          : "bg-gray-500/10 border-gray-500/20 text-gray-500"
+                      )}>
+                        {t.settlementStatus || '대기'}
+                      </span>
+                      <span className="text-sm font-bold text-[#1D1D1F] truncate">
+                        {t.memo || t.subCategory || '내역 없음'}
+                      </span>
+                      {hasImage && (
+                        <span className="text-[10px] shrink-0" title="Receipt attached">🧾</span>
+                      )}
+                    </div>
+
+                    {/* Bottom Row: Type badge + Account + SubCategory */}
+                    <div className="flex items-center gap-1.5 text-[10px] text-[#86868B] font-semibold whitespace-nowrap overflow-hidden">
+                      <span className={cn(
+                        "px-1.5 py-[1px] rounded-[6px] text-[8px] font-bold border shrink-0",
+                        t.type === 'income' ? 'bg-[#34C759]/10 border-[#34C759]/20 text-[#34C759]' :
+                        t.type === 'expense' ? 'bg-[#FF3B30]/10 border-[#FF3B30]/20 text-[#FF3B30]' :
+                        t.type === 'transfer' ? 'bg-[#0066cc]/10 border-[#0066cc]/20 text-[#0066cc]' :
+                        'bg-[#F2F2F7] border-transparent text-[#1D1D1F]'
+                      )}>
+                        {t.type === 'income' ? '수입' : t.type === 'expense' ? '지출' : t.type === 'transfer' ? '이체' : '정산'}
+                      </span>
+                      
+                      <span className="truncate max-w-[80px]">
+                        {t.type === 'transfer' ? (
+                          <span className="flex items-center gap-0.5">
+                            <span>{t.paymentMethod}</span>
+                            <ChevronRight className="w-2 h-2 text-gray-300" />
+                            <span>{t.settledToAccount}</span>
+                          </span>
+                        ) : t.paymentMethod}
+                      </span>
+                      
+                      {t.subCategory && (
+                        <>
+                          <span className="opacity-30 shrink-0">•</span>
+                          <span className="text-[#0066cc] font-bold truncate max-w-[80px]">
+                            {t.subCategory}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+                {/* Price Section */}
+                <div className="text-right shrink-0 ml-3">
+                  <p className={cn("text-sm font-black tracking-tight", amountColor)}>
+                    {t.type === 'expense' ? '-' : t.type === 'income' ? '+' : ''}
+                    {formatCurrency(t.amount)}
+                  </p>
+                  <p className="text-[9px] text-[#86868B] font-bold mt-0.5">
+                    {runningBalances[t.id] !== undefined ? `${runningBalances[t.id].toLocaleString()}원` : '0원'}
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className={cn(
-                  "text-sm font-bold tracking-tight",
-                  t.type === 'income' ? "text-[#34C759]" :
-                  t.type === 'expense' ? "text-[#FF3B30]" :
-                  "text-[#007AFF]"
-                )}>
-                  {t.type === 'expense' ? '-' : t.type === 'income' ? '+' : ''}
-                  {formatCurrency(t.amount)}
-                </p>
-                {t.subCategory && <p className="text-[10px] text-[#86868B] font-bold uppercase">{t.subCategory}</p>}
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {sortedTs.length === 0 && (
             <div className="theme-card p-12 text-center text-[#86868B] text-sm">
               해당 분류의 내역이 없습니다.

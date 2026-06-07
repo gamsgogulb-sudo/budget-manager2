@@ -67,7 +67,7 @@ export default function LedgerSwitcher() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100"
+              className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[1.25rem] shadow-none overflow-hidden border border-gray-100"
             >
               <div className="w-full flex justify-center pt-4 pb-2 sm:hidden">
                 <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
@@ -95,21 +95,21 @@ export default function LedgerSwitcher() {
                       setIsOpen(false);
                     }}
                     className={cn(
-                      "w-full flex items-center justify-between h-14 px-5 rounded-[1.25rem] transition-all text-left border-2",
+                      "w-full flex items-center justify-between h-14 px-5 rounded-[11px] transition-all text-left border-2",
                       currentLedger?.id === ledger.id 
-                        ? "bg-[#EBF5FF] border-[#EBF5FF]" 
+                        ? "bg-[#0066cc]/10 border-[#0066cc]/20" 
                         : "bg-[#F5F5F7] border-transparent hover:bg-[#EEEEF0]"
                     )}
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div className={cn(
-                        "w-9 h-9 rounded-[0.85rem] flex items-center justify-center transition-all",
-                        currentLedger?.id === ledger.id ? "bg-[#007AFF] text-white" : "bg-[#F5F5F7] text-[#86868B]"
+                        "w-9 h-9 rounded-[11px] flex items-center justify-center transition-all",
+                        currentLedger?.id === ledger.id ? "bg-[#0066cc] text-white" : "bg-[#F5F5F7] text-[#86868B]"
                       )}>
                         {ledger.type === 'shared' ? <Users className="w-4 h-4" /> : <User className="w-4 h-4" />}
                       </div>
                       <div className="min-w-0">
-                        <p className={cn("text-sm font-bold truncate", currentLedger?.id === ledger.id ? "text-[#007AFF]" : "text-[#1D1D1F]")}>
+                        <p className={cn("text-sm font-bold truncate", currentLedger?.id === ledger.id ? "text-[#0066cc]" : "text-[#1D1D1F]")}>
                           {ledger.name}
                         </p>
                         {ledger.type === 'shared' && ledger.ownerEmail && (
@@ -120,7 +120,7 @@ export default function LedgerSwitcher() {
                       </div>
                     </div>
                     {currentLedger?.id === ledger.id && (
-                      <Check className="w-5 h-5 text-[#007AFF] flex-shrink-0" />
+                      <Check className="w-5 h-5 text-[#0066cc] flex-shrink-0" />
                     )}
                   </button>
                 ))}
@@ -155,16 +155,16 @@ export default function LedgerSwitcher() {
                 setShowEditModal(false);
                 setEditingLedger(null);
               }}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#1D1D1F]/50 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-8"
+              className="relative w-full max-w-sm bg-white rounded-[18px] shadow-none border border-gray-100 overflow-hidden p-8"
             >
               <div className="flex flex-col items-center mb-8">
-                 <div className="w-12 h-12 bg-[#007AFF]/10 text-[#007AFF] rounded-2xl flex items-center justify-center mb-4">
+                 <div className="w-12 h-12 bg-[#0066cc]/10 text-[#0066cc] rounded-[11px] flex items-center justify-center mb-4">
                     <Edit2 className="w-6 h-6" />
                  </div>
                  <h3 className="text-xl font-bold text-[#1D1D1F]">가계부 수정</h3>
@@ -190,13 +190,13 @@ export default function LedgerSwitcher() {
                     <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">모드 설정</label>
                   </div>
                   
-                  <div className="flex bg-[#F5F5F7] p-1 rounded-2xl border border-gray-100">
+                  <div className="flex bg-[#F5F5F7] p-1 rounded-[11px] border border-gray-100">
                     <button
                       type="button"
                       onClick={() => setEditType('personal')}
                       className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all",
-                        editType === 'personal' ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-[11px] text-xs font-bold transition-all",
+                        editType === 'personal' ? "bg-white text-[#1D1D1F] shadow-none" : "text-[#86868B] hover:text-[#1D1D1F]"
                       )}
                     >
                       <User className="w-4 h-4" />
@@ -206,8 +206,8 @@ export default function LedgerSwitcher() {
                       type="button"
                       onClick={() => setEditType('shared')}
                       className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all",
-                        editType === 'shared' ? "bg-white text-[#007AFF] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-[11px] text-xs font-bold transition-all",
+                        editType === 'shared' ? "bg-white text-[#0066cc] shadow-none" : "text-[#86868B] hover:text-[#1D1D1F]"
                       )}
                     >
                       <Users className="w-4 h-4" />
@@ -219,7 +219,7 @@ export default function LedgerSwitcher() {
                 <div className="flex flex-col gap-2 pt-4">
                   <button
                     type="submit"
-                    className="theme-btn-primary w-full shadow-lg shadow-[#007AFF]/20"
+                    className="theme-btn-primary w-full shadow-none"
                   >
                     수정 완료
                   </button>
@@ -255,16 +255,16 @@ export default function LedgerSwitcher() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowCreateModal(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#1D1D1F]/50 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-8"
+              className="relative w-full max-w-sm bg-white rounded-[18px] shadow-none border border-gray-100 overflow-hidden p-8"
             >
               <div className="flex flex-col items-center mb-8">
-                 <div className="w-12 h-12 bg-[#007AFF]/10 text-[#007AFF] rounded-2xl flex items-center justify-center mb-4">
+                 <div className="w-12 h-12 bg-[#0066cc]/10 text-[#0066cc] rounded-[11px] flex items-center justify-center mb-4">
                     <Plus className="w-6 h-6" />
                  </div>
                  <h3 className="text-xl font-bold text-[#1D1D1F]">새 가계부</h3>
@@ -290,13 +290,13 @@ export default function LedgerSwitcher() {
                     <label className="text-[11px] font-bold text-[#86868B] uppercase tracking-[0.15em]">모드 설정</label>
                   </div>
                   
-                  <div className="flex bg-[#F5F5F7] p-1 rounded-2xl border border-gray-100">
+                  <div className="flex bg-[#F5F5F7] p-1 rounded-[11px] border border-gray-100">
                     <button
                       type="button"
                       onClick={() => setNewLedgerType('personal')}
                       className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all",
-                        newLedgerType === 'personal' ? "bg-white text-[#1D1D1F] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-[11px] text-xs font-bold transition-all",
+                        newLedgerType === 'personal' ? "bg-white text-[#1D1D1F] shadow-none" : "text-[#86868B] hover:text-[#1D1D1F]"
                       )}
                     >
                       <User className="w-4 h-4" />
@@ -306,8 +306,8 @@ export default function LedgerSwitcher() {
                       type="button"
                       onClick={() => setNewLedgerType('shared')}
                       className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all",
-                        newLedgerType === 'shared' ? "bg-white text-[#007AFF] shadow-sm" : "text-[#86868B] hover:text-[#1D1D1F]"
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-[11px] text-xs font-bold transition-all",
+                        newLedgerType === 'shared' ? "bg-white text-[#0066cc] shadow-none" : "text-[#86868B] hover:text-[#1D1D1F]"
                       )}
                     >
                       <Users className="w-4 h-4" />
@@ -319,7 +319,7 @@ export default function LedgerSwitcher() {
                 <div className="flex flex-col gap-2 pt-4">
                   <button
                     type="submit"
-                    className="theme-btn-primary w-full shadow-lg shadow-[#007AFF]/20"
+                    className="theme-btn-primary w-full shadow-none"
                   >
                     가계부 만들기
                   </button>
